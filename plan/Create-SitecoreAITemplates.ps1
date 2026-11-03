@@ -4,14 +4,20 @@
 .DESCRIPTION
     Provisions the Project-layer template hierarchy under:
       master:/sitecore/templates/Project/Corporate/FitnessMaster
-    Architecture:
-      1. Base/*             - 9 Reusable Base Templates extracted from common variables across
-                              Organisms and DatasourceItems (_BaseTitle, _BaseSectionHeading,
-                              _BaseDescription, _BaseMedia, _BaseCta, _BaseContactInfo,
-                              _BaseSocialLinks, _BaseBrandIdentity, _BasePagination)
-                              + Optional _SitecoreAI_Metadata toggle ($IncludeSitecoreAIBase = $false)
-      2. DatasourceItems/*  - 11 Child item templates inheriting common Base Templates
-      3. Organisms/*        - 19 Organism component templates inheriting common Base Templates
+    Architecture Rule:
+      - A Base Template MUST contain a minimum of 2 common fields.
+      - Single-field overlaps are NOT extracted into a Base Template; they remain on the template.
+      1. Base/*             - 8 Multi-Field Base Templates (2 to 4 fields each):
+                              _BaseSectionHeading (2 fields: Title, Subtitle)
+                              _BaseContentBlock   (2 fields: Title, Description)
+                              _BaseMediaItem      (2 fields: Title, Image)
+                              _BaseMediaCta       (2 fields: Image, CtaLink)
+                              _BaseContactInfo    (3 fields: Address, Phone, Email)
+                              _BaseSocialLinks    (4 fields: FacebookLink, TwitterLink, InstagramLink, YoutubeLink)
+                              _BaseBrandIdentity  (2 fields: BrandPrefix, BrandSuffix)
+                              _BasePagination     (3 fields: PageSize, TotalPages, TotalResults)
+      2. DatasourceItems/*  - 11 Child item templates inheriting multi-field Base Templates where applicable
+      3. Organisms/*        - 19 Organism component templates inheriting multi-field Base Templates
                               + component-specific __Standard Values and Insert Options
       4. Add-SitecoreAIField - Reusable helper to add new fields with Sitecore AI metadata
 .NOTES
@@ -40,9 +46,8 @@ $OrganismsPath      = "$TenantRootPath/Organisms"
 
 $DataRootQuery      = "query:./ancestor-or-self::*[@@templatename='Site']/Data"
 
-# Optional toggle: Sitecore AI works natively on standard fields using field descriptions.
-# Set to $true only if you also want explicit AI governance fields on every item.
-$IncludeSitecoreAIBase = $false
+# Minimum number of common fields required to qualify as a Base Template
+$MinBaseTemplateFields = 2
 
 # ============================================================================
 # 2. CORE SPE HELPER FUNCTIONS
@@ -165,8 +170,7 @@ function Ensure-SitecoreTemplate {
         [Parameter(Mandatory = $true)][string]$TemplateName,
         [string]$Icon = "Office/32x32/window_dialog.png",
         [string[]]$BaseTemplateIds = @(),
-        [string[]]$InsertOptionIds = @(),
-        [hashtable]$StandardValues = @{}
+        [string[]]$InsertOptionIds = @()
     )
 
     $templatePath = "$ParentPath/$TemplateName"
@@ -206,11 +210,6 @@ function Ensure-SitecoreTemplate {
     $stdValuesItem["__Icon"] = $Icon
     if (($InsertOptionIds) -and ($InsertOptionIds.Count -gt 0)) {
         $stdValuesItem["__Masters"] = ($InsertOptionIds -join "|")
-    }
-    if (($StandardValues) -and ($StandardValues.Count -gt 0)) {
-        foreach ($kvp in $StandardValues.GetEnumerator()) {
-            $stdValuesItem[$kvp.Key] = $kvp.Value
-        }
     }
     $stdValuesItem.Editing.EndEdit() | Out-Null
 
@@ -261,48 +260,40 @@ try {
         Ensure-TemplateFolder -ParentPath $TenantRootPath  -FolderName "Organisms" | Out-Null
 
         # ====================================================================
-        # 4. CREATE COMMON BASE TEMPLATES (Base/*) FOR INHERITANCE
+        # 4. CREATE MULTI-FIELD BASE TEMPLATES (Base/*) - MINIMUM 2 FIELDS
         # ====================================================================
-        # Extracted from common variables shared across Organisms & DatasourceItems
+        # Rule: Every Base Template MUST define at least 2 common fields.
         $baseDefinitions = @(
             @{
-                Name = "_BaseTitle"; Icon = "Office/32x32/font.png"; Section = "Common Heading"; SortOrder = 50;
-                Inherits = @();
-                Fields = @(
-                    @{ Name = "Title"; Title = "Title"; Type = "Single-Line Text"; Hint = "Primary heading or item title generated or optimized by Sitecore AI."; MaxLen = "70 chars" }
-                )
-            },
-            @{
                 Name = "_BaseSectionHeading"; Icon = "Office/32x32/text_align_center.png"; Section = "Common Heading"; SortOrder = 50;
-                Inherits = @("_BaseTitle");
                 Fields = @(
-                    @{ Name = "Subtitle"; Title = "Subtitle / Eyebrow"; Type = "Single-Line Text"; Hint = "Short uppercase eyebrow label displayed above the main Title."; MaxLen = "35 chars" }
+                    @{ Name = "Subtitle"; Title = "Subtitle / Eyebrow"; Type = "Single-Line Text"; Hint = "Short uppercase eyebrow label displayed above the main Title."; MaxLen = "35 chars" },
+                    @{ Name = "Title"; Title = "Title"; Type = "Single-Line Text"; Hint = "Primary section heading generated or optimized by Sitecore AI."; MaxLen = "70 chars" }
                 )
             },
             @{
-                Name = "_BaseDescription"; Icon = "Office/32x32/text_align_left.png"; Section = "Common Content"; SortOrder = 60;
-                Inherits = @();
+                Name = "_BaseContentBlock"; Icon = "Office/32x32/text_align_left.png"; Section = "Common Content"; SortOrder = 60;
                 Fields = @(
-                    @{ Name = "Description"; Title = "Description / Summary"; Type = "Multi-Line Text"; Hint = "Supporting body description or summary copy for the component or card."; MaxLen = "180 chars" }
+                    @{ Name = "Title"; Title = "Title"; Type = "Single-Line Text"; Hint = "Primary title or name for this content item."; MaxLen = "70 chars" },
+                    @{ Name = "Description"; Title = "Description / Summary"; Type = "Multi-Line Text"; Hint = "Supporting body description, excerpt, or quote text."; MaxLen = "180 chars" }
                 )
             },
             @{
-                Name = "_BaseMedia"; Icon = "Office/32x32/photo_landscape.png"; Section = "Common Media"; SortOrder = 70;
-                Inherits = @();
+                Name = "_BaseMediaItem"; Icon = "Office/32x32/photo_landscape.png"; Section = "Common Media Item"; SortOrder = 65;
                 Fields = @(
-                    @{ Name = "Image"; Title = "Primary Image"; Type = "Image"; Source = ""; Hint = "Primary visual asset (hero background, card thumbnail, or portrait)." }
+                    @{ Name = "Title"; Title = "Title"; Type = "Single-Line Text"; Hint = "Primary title or caption for this visual item."; MaxLen = "70 chars" },
+                    @{ Name = "Image"; Title = "Primary Image"; Type = "Image"; Source = ""; Hint = "Primary visual image asset." }
                 )
             },
             @{
-                Name = "_BaseCta"; Icon = "Office/32x32/navigate_right.png"; Section = "Common Navigation & CTA"; SortOrder = 80;
-                Inherits = @();
+                Name = "_BaseMediaCta"; Icon = "Office/32x32/navigate_right.png"; Section = "Common Media & CTA"; SortOrder = 70;
                 Fields = @(
+                    @{ Name = "Image"; Title = "Primary Image"; Type = "Image"; Source = ""; Hint = "Primary visual asset (hero background, card thumbnail, or feature photo)." },
                     @{ Name = "CtaLink"; Title = "Primary CTA / Target Link"; Type = "General Link"; Hint = "Primary call-to-action button or item destination link." }
                 )
             },
             @{
-                Name = "_BaseContactInfo"; Icon = "Office/32x32/telephone.png"; Section = "Common Contact Details"; SortOrder = 85;
-                Inherits = @();
+                Name = "_BaseContactInfo"; Icon = "Office/32x32/telephone.png"; Section = "Common Contact Details"; SortOrder = 80;
                 Fields = @(
                     @{ Name = "Address"; Title = "Physical Address"; Type = "Single-Line Text"; Default = "123 Fitness Avenue, Wellness City, NY 10001"; Hint = "Physical studio or clinic address." },
                     @{ Name = "Phone"; Title = "Phone Number"; Type = "Single-Line Text"; Default = "+1 (555) 123-4567"; Hint = "Contact phone number." },
@@ -310,8 +301,7 @@ try {
                 )
             },
             @{
-                Name = "_BaseSocialLinks"; Icon = "Office/32x32/earth.png"; Section = "Common Social Links"; SortOrder = 90;
-                Inherits = @();
+                Name = "_BaseSocialLinks"; Icon = "Office/32x32/earth.png"; Section = "Common Social Links"; SortOrder = 85;
                 Fields = @(
                     @{ Name = "FacebookLink"; Title = "Facebook URL"; Type = "General Link"; Hint = "Facebook profile or brand page link." },
                     @{ Name = "TwitterLink"; Title = "Twitter / X URL"; Type = "General Link"; Hint = "Twitter/X profile or brand page link." },
@@ -321,7 +311,6 @@ try {
             },
             @{
                 Name = "_BaseBrandIdentity"; Icon = "Office/32x32/Smart_card.png"; Section = "Common Branding"; SortOrder = 40;
-                Inherits = @();
                 Fields = @(
                     @{ Name = "BrandPrefix"; Title = "Brand Wordmark Prefix"; Type = "Single-Line Text"; Default = "FitLife"; Hint = "First part of the brand wordmark." },
                     @{ Name = "BrandSuffix"; Title = "Brand Wordmark Highlight"; Type = "Single-Line Text"; Default = "Coach"; Hint = "Highlighted second part of the brand wordmark." }
@@ -329,7 +318,6 @@ try {
             },
             @{
                 Name = "_BasePagination"; Icon = "Office/32x32/table_selection_row.png"; Section = "Common Pagination"; SortOrder = 95;
-                Inherits = @();
                 Fields = @(
                     @{ Name = "PageSize"; Title = "Items Per Page"; Type = "Integer"; Default = "6"; Hint = "Number of cards shown per page." },
                     @{ Name = "TotalPages"; Title = "Total Pages"; Type = "Integer"; Default = "5"; Hint = "Total pages in pagination bar." },
@@ -341,18 +329,16 @@ try {
         $baseTemplateIds = @{}
 
         foreach ($baseDef in $baseDefinitions) {
-            $resolvedParentIds = @()
-            foreach ($parentName in $baseDef.Inherits) {
-                if ($baseTemplateIds.ContainsKey($parentName)) {
-                    $resolvedParentIds += $baseTemplateIds[$parentName]
-                }
+            # Enforce minimum 2 fields rule for all Base Templates
+            if ((-not $baseDef.Fields) -or ($baseDef.Fields.Count -lt $MinBaseTemplateFields)) {
+                Write-Warning "[WARN] Skipping Base Template '$($baseDef.Name)': Must have at least $MinBaseTemplateFields fields."
+                continue
             }
 
             $baseTpl = Ensure-SitecoreTemplate `
                 -ParentPath $BaseFolderPath `
                 -TemplateName $baseDef.Name `
-                -Icon $baseDef.Icon `
-                -BaseTemplateIds $resolvedParentIds
+                -Icon $baseDef.Icon
 
             $baseTplPath = "master:$($baseTpl.Paths.FullPath)"
             $baseTemplateIds[$baseDef.Name] = $baseTpl.ID.ToString()
@@ -380,42 +366,24 @@ try {
             }
         }
 
-        # Optional _SitecoreAI_Metadata base template (only created if $IncludeSitecoreAIBase = $true)
-        if ($IncludeSitecoreAIBase) {
-            $aiBaseTemplate = Ensure-SitecoreTemplate `
-                -ParentPath $BaseFolderPath `
-                -TemplateName "_SitecoreAI_Metadata" `
-                -Icon "Office/32x32/brain.png"
-
-            $aiBasePath = "master:$($aiBaseTemplate.Paths.FullPath)"
-            $baseTemplateIds["_SitecoreAI_Metadata"] = $aiBaseTemplate.ID.ToString()
-
-            Add-SitecoreAIField `
-                -TemplatePath $aiBasePath `
-                -SectionName "Sitecore AI Configuration" `
-                -SectionSortOrder 900 `
-                -FieldName "AIPromptContext" `
-                -FieldTitle "AI Prompt Context" `
-                -FieldType "Multi-Line Text" `
-                -SortOrder 100 `
-                -AIPromptHint "Provides component-specific business context to Sitecore AI / Stream when generating copy." `
-                -DefaultValue "Health, nutrition, and holistic fitness coaching by FitLifeCoach." | Out-Null
-        }
-
         # ====================================================================
         # 5. CREATE CHILD DATASOURCE ITEM TEMPLATES (DatasourceItems/*)
-        #    Inheriting from Base/* wherever common variables exist
+        #    Inherits Base/* ONLY when >= 2 common fields match
         # ====================================================================
         $childDefinitions = @(
             @{
+                # Only 1 field -> No Base Template inheritance
                 Name = "FeatureHighlightItem"; Icon = "Office/32x32/check.png"; Section = "Highlight Data";
-                Inherits = @("_BaseTitle");
-                StandardValues = @{ Title = "Personalized Nutrition Plans" };
-                Fields = @() # Uses inherited Title from _BaseTitle
+                Inherits = @();
+                StandardValues = @{};
+                Fields = @(
+                    @{ Name = "Title"; Type = "Single-Line Text"; Default = "Personalized Nutrition Plans"; Hint = "Short bullet highlight for AboutSnippet."; MaxLen = "50 chars" }
+                )
             },
             @{
+                # Inherits _BaseContentBlock (Title, Description) + _BaseMediaCta (Image, CtaLink)
                 Name = "BlogPostItem"; Icon = "Office/32x32/document_text.png"; Section = "Article Data";
-                Inherits = @("_BaseTitle", "_BaseDescription", "_BaseMedia", "_BaseCta");
+                Inherits = @("_BaseContentBlock", "_BaseMediaCta");
                 StandardValues = @{};
                 Fields = @(
                     @{ Name = "PublishDate"; Type = "Date"; Hint = "Publication date of the blog post." },
@@ -426,76 +394,92 @@ try {
                 )
             },
             @{
+                # Inherits _BaseMediaItem (Title, Image) + _BaseSocialLinks (FacebookLink, TwitterLink, InstagramLink, YoutubeLink)
                 Name = "CoachItem"; Icon = "Office/32x32/user.png"; Section = "Coach Profile";
-                Inherits = @("_BaseTitle", "_BaseMedia", "_BaseSocialLinks");
+                Inherits = @("_BaseMediaItem", "_BaseSocialLinks");
                 StandardValues = @{};
                 Fields = @(
                     @{ Name = "Role"; Type = "Single-Line Text"; Hint = "Coach specialization title (e.g., Senior Nutritionist, Strength Coach)."; MaxLen = "45 chars" }
                 )
             },
             @{
+                # Inherits _BaseMediaItem (Title, Image)
                 Name = "GalleryItem"; Icon = "Office/32x32/photo_landscape.png"; Section = "Gallery Media";
-                Inherits = @("_BaseTitle", "_BaseMedia");
+                Inherits = @("_BaseMediaItem");
                 StandardValues = @{};
                 Fields = @(
                     @{ Name = "Category"; Type = "Single-Line Text"; Hint = "Filter category tag (Fitness, Coaching, Events)."; Default = "Fitness" }
                 )
             },
             @{
+                # Specific navigation fields -> Defined directly on NavigationLinkItem
                 Name = "NavigationLinkItem"; Icon = "Office/32x32/navigate_right.png"; Section = "Navigation Link";
-                Inherits = @("_BaseTitle", "_BaseCta");
+                Inherits = @();
                 StandardValues = @{};
-                Fields = @() # Uses inherited Title (label) and CtaLink (destination)
+                Fields = @(
+                    @{ Name = "LinkTitle"; Type = "Single-Line Text"; Hint = "Navigation label displayed in Navbar or Footer."; MaxLen = "25 chars" },
+                    @{ Name = "TargetLink"; Type = "General Link"; Hint = "Destination route or URL." }
+                )
             },
             @{
+                # Inherits _BaseContentBlock (Title, Description)
                 Name = "ProcedureStepItem"; Icon = "Office/32x32/number_1.png"; Section = "Step Details";
-                Inherits = @("_BaseTitle", "_BaseDescription");
+                Inherits = @("_BaseContentBlock");
                 StandardValues = @{};
                 Fields = @(
                     @{ Name = "StepNumber"; Type = "Single-Line Text"; Hint = "Two-digit step number (e.g., 01, 02, 03, 04)."; Default = "01" }
                 )
             },
             @{
+                # Inherits _BaseMediaItem (Title, Image)
                 Name = "ProductItem"; Icon = "Office/32x32/box_closed.png"; Section = "Product Details";
-                Inherits = @("_BaseTitle", "_BaseMedia", "_BaseCta");
+                Inherits = @("_BaseMediaItem");
                 StandardValues = @{};
                 Fields = @(
-                    @{ Name = "Price"; Type = "Single-Line Text"; Hint = "Formatted display price (e.g., $49.99)." },
+                    @{ Name = "Price"; Type = "Single-Line Text"; Hint = "Formatted display price (e.g., 49.99)." },
                     @{ Name = "Category"; Type = "Single-Line Text"; Hint = "Product category name for filtering." },
-                    @{ Name = "Badge"; Type = "Single-Line Text"; Hint = "Optional promotional badge (e.g., Sale, New, Best Seller)." }
+                    @{ Name = "Badge"; Type = "Single-Line Text"; Hint = "Optional promotional badge (e.g., Sale, New, Best Seller)." },
+                    @{ Name = "ProductLink"; Type = "General Link"; Hint = "Link to product detail or checkout." }
                 )
             },
             @{
+                # Only 1 common field -> No Base Template inheritance
                 Name = "ProductCategoryItem"; Icon = "Office/32x32/tag.png"; Section = "Category Data";
-                Inherits = @("_BaseTitle");
+                Inherits = @();
                 StandardValues = @{};
                 Fields = @(
+                    @{ Name = "CategoryName"; Type = "Single-Line Text"; Hint = "Category display name in ProductSidebar." },
                     @{ Name = "ItemCount"; Type = "Integer"; Hint = "Optional count of products in this category."; Default = "0" }
                 )
             },
             @{
+                # Inherits _BaseContentBlock (Title, Description) + _BaseMediaCta (Image, CtaLink)
                 Name = "ServiceItem"; Icon = "Office/32x32/heart.png"; Section = "Service Details";
-                Inherits = @("_BaseTitle", "_BaseDescription", "_BaseMedia", "_BaseCta");
+                Inherits = @("_BaseContentBlock", "_BaseMediaCta");
                 StandardValues = @{};
                 Fields = @(
                     @{ Name = "IconName"; Type = "Single-Line Text"; Hint = "Icon identifier for ServicesPreview (e.g., FaAppleAlt, FaDumbbell, FaHeartbeat)." }
                 )
             },
             @{
+                # Only 1 common field -> No Base Template inheritance
                 Name = "StatItem"; Icon = "Office/32x32/chart_bar.png"; Section = "Statistic Metric";
-                Inherits = @("_BaseTitle");
+                Inherits = @();
                 StandardValues = @{};
                 Fields = @(
-                    @{ Name = "Value"; Type = "Single-Line Text"; Hint = "Metric counter value with suffix (e.g., 24+, 1500+, 98%)."; MaxLen = "10 chars" }
+                    @{ Name = "Value"; Type = "Single-Line Text"; Hint = "Metric counter value with suffix (e.g., 24+, 1500+, 98%)."; MaxLen = "10 chars" },
+                    @{ Name = "Label"; Type = "Single-Line Text"; Hint = "Metric label beneath the counter (e.g., Happy Clients, Years Experience)."; MaxLen = "30 chars" }
                 )
             },
             @{
+                # Inherits _BaseContentBlock (Title, Description)
                 Name = "TestimonialItem"; Icon = "Office/32x32/Users_chat.png"; Section = "Client Story";
-                Inherits = @("_BaseTitle", "_BaseDescription", "_BaseMedia");
+                Inherits = @("_BaseContentBlock");
                 StandardValues = @{};
                 Fields = @(
                     @{ Name = "ClientRole"; Type = "Single-Line Text"; Hint = "Client occupation or persona description (e.g., Marketing Executive)." },
-                    @{ Name = "Rating"; Type = "Integer"; Hint = "Star rating from 1 to 5."; Default = "5" }
+                    @{ Name = "Rating"; Type = "Integer"; Hint = "Star rating from 1 to 5."; Default = "5" },
+                    @{ Name = "AvatarImage"; Type = "Image"; Source = ""; Hint = "Circular avatar photo of the client." }
                 )
             }
         )
@@ -507,9 +491,6 @@ try {
                 if ($baseTemplateIds.ContainsKey($baseName)) {
                     $resolvedBaseIds += $baseTemplateIds[$baseName]
                 }
-            }
-            if (($IncludeSitecoreAIBase) -and ($baseTemplateIds.ContainsKey("_SitecoreAI_Metadata"))) {
-                $resolvedBaseIds += $baseTemplateIds["_SitecoreAI_Metadata"]
             }
 
             $childTpl = Ensure-SitecoreTemplate `
@@ -547,12 +528,13 @@ try {
 
         # ====================================================================
         # 6. CREATE ALL 19 ORGANISM COMPONENT TEMPLATES (Organisms/*)
-        #    Inheriting from Base/* wherever common variables exist
+        #    Inherits Base/* ONLY when >= 2 common fields match
         # ====================================================================
         $organisms = @(
             @{
+                # Inherits _BaseSectionHeading (Subtitle, Title) + _BaseMediaCta (Image, CtaLink)
                 Name = "AboutSnippet"; Icon = "Office/32x32/information.png";
-                Inherits = @("_BaseSectionHeading", "_BaseMedia", "_BaseCta");
+                Inherits = @("_BaseSectionHeading", "_BaseMediaCta");
                 InsertOptions = @($childTemplateIds["FeatureHighlightItem"]);
                 StandardValues = @{ Subtitle = "About Us"; Title = "Better Eat, Better Life" };
                 Fields = @(
@@ -564,31 +546,34 @@ try {
                 )
             },
             @{
+                # Inherits _BaseSectionHeading (Subtitle, Title) + _BaseContactInfo (Address, Phone, Email)
                 Name = "AppointmentForm"; Icon = "Office/32x32/calendar_clock.png";
-                Inherits = @("_BaseSectionHeading", "_BaseDescription", "_BaseContactInfo");
+                Inherits = @("_BaseSectionHeading", "_BaseContactInfo");
                 InsertOptions = @($childTemplateIds["ServiceItem"]);
                 StandardValues = @{
                     Subtitle = "Get in Touch";
-                    Title = "Make an Appointment";
-                    Description = "Take the first step towards a healthier, happier you. Fill out the form, and our coaching team will get back to you within 24 hours."
+                    Title = "Make an Appointment"
                 };
                 Fields = @(
                     @{ Section = "Left Panel Info"; Name = "PanelTitle"; Type = "Single-Line Text"; Default = "Start Your Journey Today"; Hint = "Motivational heading on the colored info panel."; MaxLen = "50 chars" },
+                    @{ Section = "Left Panel Info"; Name = "PanelDescription"; Type = "Multi-Line Text"; Default = "Take the first step towards a healthier, happier you. Fill out the form, and our coaching team will get back to you within 24 hours."; Hint = "Reassuring lead-capture copy with response SLA."; MaxLen = "180 chars" },
                     @{ Section = "Form Configuration"; Name = "ServiceOptions"; Type = "Multilist"; Source = "$DataRootQuery/Services"; Hint = "Selectable services in the Service of Interest dropdown." },
                     @{ Section = "Form Configuration"; Name = "SubmitButtonText"; Type = "Single-Line Text"; Default = "Book Appointment"; Hint = "Form submit button label."; MaxLen = "25 chars" },
                     @{ Section = "Form Configuration"; Name = "SubmitEndpoint"; Type = "Single-Line Text"; Default = "/api/appointments"; Hint = "API endpoint or webhook URL for appointment submissions." }
                 )
             },
             @{
+                # Inherits _BasePagination (PageSize, TotalPages, TotalResults)
                 Name = "BlogGrid"; Icon = "Office/32x32/newspaper.png";
                 Inherits = @("_BasePagination");
                 InsertOptions = @($childTemplateIds["BlogPostItem"]);
-                StandardValues = @{ PageSize = "6"; TotalPages = "5" };
+                StandardValues = @{ PageSize = "6"; TotalPages = "5"; TotalResults = "30" };
                 Fields = @(
                     @{ Section = "Grid Configuration"; Name = "Posts"; Type = "Multilist"; Source = "query:./*[@@templatename='BlogPostItem']"; Hint = "Curated blog posts to render in the 3-column grid." }
                 )
             },
             @{
+                # Inherits _BaseSectionHeading (Subtitle, Title)
                 Name = "CoachesSection"; Icon = "Office/32x32/users3.png";
                 Inherits = @("_BaseSectionHeading");
                 InsertOptions = @($childTemplateIds["CoachItem"]);
@@ -598,11 +583,13 @@ try {
                 )
             },
             @{
+                # Only 1 heading field -> No Base Template inheritance
                 Name = "ContactForm"; Icon = "Office/32x32/mail_write.png";
-                Inherits = @("_BaseTitle");
+                Inherits = @();
                 InsertOptions = @();
-                StandardValues = @{ Title = "Send Us A Message" };
+                StandardValues = @{};
                 Fields = @(
+                    @{ Section = "Form Settings"; Name = "FormHeading"; Type = "Single-Line Text"; Default = "Send Us A Message"; Hint = "Heading at the top of the contact inquiry card."; MaxLen = "45 chars" },
                     @{ Section = "Form Settings"; Name = "NameLabel"; Type = "Single-Line Text"; Default = "Your Name"; Hint = "Label for the name input field." },
                     @{ Section = "Form Settings"; Name = "EmailLabel"; Type = "Single-Line Text"; Default = "Email Address"; Hint = "Label for the email input field." },
                     @{ Section = "Form Settings"; Name = "PhoneLabel"; Type = "Single-Line Text"; Default = "Phone Number"; Hint = "Label for the phone input field." },
@@ -613,8 +600,9 @@ try {
                 )
             },
             @{
+                # Inherits _BaseContentBlock (Title, Description) + _BaseContactInfo (Address, Phone, Email)
                 Name = "ContactInfoSection"; Icon = "Office/32x32/telephone.png";
-                Inherits = @("_BaseTitle", "_BaseDescription", "_BaseContactInfo");
+                Inherits = @("_BaseContentBlock", "_BaseContactInfo");
                 InsertOptions = @();
                 StandardValues = @{
                     Title = "Contact Information";
@@ -629,22 +617,24 @@ try {
                 )
             },
             @{
+                # Only 1 common field -> No Base Template inheritance
                 Name = "ContactMap"; Icon = "Office/32x32/earth_location.png";
-                Inherits = @("_BaseTitle");
+                Inherits = @();
                 InsertOptions = @();
-                StandardValues = @{ Title = "Location Map" };
+                StandardValues = @{};
                 Fields = @(
+                    @{ Section = "Map Settings"; Name = "MapTitle"; Type = "Single-Line Text"; Default = "Location Map"; Hint = "Accessible title attribute for the map iframe." },
                     @{ Section = "Map Settings"; Name = "MapEmbedUrl"; Type = "Single-Line Text"; Default = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126743.63162590213!2d79.7738032704285!3d6.921833527581561"; Hint = "Google Maps iframe embed URL." }
                 )
             },
             @{
+                # Inherits _BaseBrandIdentity (BrandPrefix, BrandSuffix) + _BaseSocialLinks (4 fields) + _BaseContactInfo (Address, Phone, Email)
                 Name = "Footer"; Icon = "Office/32x32/layout_south.png";
-                Inherits = @("_BaseBrandIdentity", "_BaseDescription", "_BaseSocialLinks", "_BaseContactInfo");
+                Inherits = @("_BaseBrandIdentity", "_BaseSocialLinks", "_BaseContactInfo");
                 InsertOptions = @($childTemplateIds["NavigationLinkItem"]);
-                StandardValues = @{
-                    Description = "Better Eat, Better Life. Empowering you to achieve your health and wellness goals through personalized coaching, nutrition, and support."
-                };
+                StandardValues = @{};
                 Fields = @(
+                    @{ Section = "Brand Column"; Name = "BrandSummary"; Type = "Multi-Line Text"; Default = "Better Eat, Better Life. Empowering you to achieve your health and wellness goals through personalized coaching, nutrition, and support."; Hint = "Footer mission statement."; MaxLen = "180 chars" },
                     @{ Section = "Navigation Columns"; Name = "QuickLinksHeading"; Type = "Single-Line Text"; Default = "Quick Links"; Hint = "Column heading for site links." },
                     @{ Section = "Navigation Columns"; Name = "QuickLinks"; Type = "Multilist"; Source = "query:./*[@@templatename='NavigationLinkItem']"; Hint = "Links displayed under Quick Links." },
                     @{ Section = "Navigation Columns"; Name = "ServicesHeading"; Type = "Single-Line Text"; Default = "Our Services"; Hint = "Column heading for service links." },
@@ -666,8 +656,9 @@ try {
                 )
             },
             @{
+                # Inherits _BaseMediaItem (Title, Image)
                 Name = "HeroSection"; Icon = "Office/32x32/window_header.png";
-                Inherits = @("_BaseTitle", "_BaseMedia");
+                Inherits = @("_BaseMediaItem");
                 InsertOptions = @();
                 StandardValues = @{ Title = "Our Services" };
                 Fields = @(
@@ -675,29 +666,33 @@ try {
                 )
             },
             @{
+                # Inherits _BaseSectionHeading (Subtitle, Title) + _BaseMediaCta (Image, CtaLink)
                 Name = "HomeHero"; Icon = "Office/32x32/star.png";
-                Inherits = @("_BaseSectionHeading", "_BaseDescription", "_BaseMedia", "_BaseCta");
+                Inherits = @("_BaseSectionHeading", "_BaseMediaCta");
                 InsertOptions = @();
                 StandardValues = @{
                     Subtitle = "Transform Your Life";
-                    Title = "Eat Mindfully, Sweat Often & Self Love Always";
-                    Description = "Discover a balanced approach to fitness and nutrition. Our personalized coaching programs are designed to help you achieve sustainable results."
+                    Title = "Eat Mindfully, Sweat Often & Self Love Always"
                 };
                 Fields = @(
+                    @{ Section = "Hero Content"; Name = "Description"; Type = "Multi-Line Text"; Default = "Discover a balanced approach to fitness and nutrition. Our personalized coaching programs are designed to help you achieve sustainable results."; Hint = "Supporting value proposition subheadline."; MaxLen = "180 chars" },
                     @{ Section = "Media & Actions"; Name = "SecondaryCta"; Type = "General Link"; Hint = "Secondary outline CTA button (Explore Services)." }
                 )
             },
             @{
+                # Inherits _BaseBrandIdentity (BrandPrefix, BrandSuffix)
                 Name = "Navbar"; Icon = "Office/32x32/layout_north.png";
-                Inherits = @("_BaseBrandIdentity", "_BaseCta");
+                Inherits = @("_BaseBrandIdentity");
                 InsertOptions = @($childTemplateIds["NavigationLinkItem"]);
                 StandardValues = @{};
                 Fields = @(
                     @{ Section = "Navigation & CTA"; Name = "NavigationLinks"; Type = "Multilist"; Source = "query:./*[@@templatename='NavigationLinkItem']"; Hint = "Ordered top-level navigation links." },
+                    @{ Section = "Navigation & CTA"; Name = "DesktopCtaLink"; Type = "General Link"; Hint = "Header CTA button (Appointment)." },
                     @{ Section = "Navigation & CTA"; Name = "MobileCtaLink"; Type = "General Link"; Hint = "Mobile drawer CTA button (Make an Appointment)." }
                 )
             },
             @{
+                # Inherits _BaseSectionHeading (Subtitle, Title)
                 Name = "Procedure"; Icon = "Office/32x32/navigate_Open.png";
                 Inherits = @("_BaseSectionHeading");
                 InsertOptions = @($childTemplateIds["ProcedureStepItem"]);
@@ -707,6 +702,7 @@ try {
                 )
             },
             @{
+                # Inherits _BasePagination (PageSize, TotalPages, TotalResults)
                 Name = "ProductCatalog"; Icon = "Office/32x32/shopping_cart.png";
                 Inherits = @("_BasePagination");
                 InsertOptions = @($childTemplateIds["ProductItem"]);
@@ -716,11 +712,13 @@ try {
                 )
             },
             @{
+                # Only 1 heading field -> No Base Template inheritance
                 Name = "ProductSidebar"; Icon = "Office/32x32/funnel.png";
-                Inherits = @("_BaseTitle");
+                Inherits = @();
                 InsertOptions = @($childTemplateIds["ProductCategoryItem"]);
-                StandardValues = @{ Title = "Search Products" };
+                StandardValues = @{};
                 Fields = @(
+                    @{ Section = "Sidebar Filters"; Name = "SearchHeading"; Type = "Single-Line Text"; Default = "Search Products"; Hint = "Heading above the product search input." },
                     @{ Section = "Sidebar Filters"; Name = "SearchPlaceholder"; Type = "Single-Line Text"; Default = "Search..."; Hint = "Placeholder text inside search box." },
                     @{ Section = "Sidebar Filters"; Name = "Categories"; Type = "Multilist"; Source = "query:./*[@@templatename='ProductCategoryItem']"; Hint = "Filterable product categories." },
                     @{ Section = "Sidebar Filters"; Name = "EnablePriceFilter"; Type = "Checkbox"; Default = "1"; Hint = "Toggles the PriceFilterWidget visibility." }
@@ -736,6 +734,7 @@ try {
                 )
             },
             @{
+                # Inherits _BaseSectionHeading (Subtitle, Title)
                 Name = "ServicesPreview"; Icon = "Office/32x32/Flash_light.png";
                 Inherits = @("_BaseSectionHeading");
                 InsertOptions = @($childTemplateIds["ServiceItem"]);
@@ -745,15 +744,18 @@ try {
                 )
             },
             @{
+                # Only 1 image field -> No Base Template inheritance
                 Name = "StatsSection"; Icon = "Office/32x32/chart_line.png";
-                Inherits = @("_BaseMedia");
+                Inherits = @();
                 InsertOptions = @($childTemplateIds["StatItem"]);
                 StandardValues = @{};
                 Fields = @(
+                    @{ Section = "Statistics Content"; Name = "BackgroundImage"; Type = "Image"; Source = ""; Hint = "Dark-overlay background photo behind stat counters." },
                     @{ Section = "Statistics Content"; Name = "Stats"; Type = "Multilist"; Source = "query:./*[@@templatename='StatItem']"; Hint = "Up to 4 StatItem counter datasources." }
                 )
             },
             @{
+                # Inherits _BaseSectionHeading (Subtitle, Title)
                 Name = "Testimonials"; Icon = "Office/32x32/comment_edit.png";
                 Inherits = @("_BaseSectionHeading");
                 InsertOptions = @($childTemplateIds["TestimonialItem"]);
@@ -770,9 +772,6 @@ try {
                 if ($baseTemplateIds.ContainsKey($baseName)) {
                     $resolvedBaseIds += $baseTemplateIds[$baseName]
                 }
-            }
-            if (($IncludeSitecoreAIBase) -and ($baseTemplateIds.ContainsKey("_SitecoreAI_Metadata"))) {
-                $resolvedBaseIds += $baseTemplateIds["_SitecoreAI_Metadata"]
             }
 
             $orgTpl = Ensure-SitecoreTemplate `
@@ -830,9 +829,9 @@ try {
     Write-Host "============================================================" -ForegroundColor Green
     Write-Host "[OK] Successfully provisioned all FitnessMaster Sitecore Templates!" -ForegroundColor Green
     Write-Host "     Root Path : $TenantRootPath" -ForegroundColor Green
-    Write-Host "     Base      : 9 Common Base Templates under $BaseFolderPath" -ForegroundColor Green
-    Write-Host "     Items     : 11 Datasource Item Templates (via Base Inheritance)" -ForegroundColor Green
-    Write-Host "     Organisms : 19 Organism Component Templates (via Base Inheritance)" -ForegroundColor Green
+    Write-Host "     Base      : 8 Multi-Field Base Templates (>= 2 fields each)" -ForegroundColor Green
+    Write-Host "     Items     : 11 Datasource Item Templates" -ForegroundColor Green
+    Write-Host "     Organisms : 19 Organism Component Templates" -ForegroundColor Green
     Write-Host "============================================================" -ForegroundColor Green
 }
 catch {
