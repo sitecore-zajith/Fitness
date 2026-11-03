@@ -26,7 +26,7 @@ $TemplateSectionId  = "{E269FBB5-3750-427A-9149-7AA950B49301}"
 $TemplateFieldId    = "{455A3E98-A627-4B40-8035-E683A0331AC7}"
 $StandardTemplateId = "{1930BBEB-7805-471A-A3BE-4858AC7CF696}"
 
-$ProjectRootPath    = "master:/sitecore/templates/Project"
+$ProjectRootPath    = "master:/sitecore/templates/Project/Corporate"
 $TenantName         = "FitnessMaster"
 $TenantRootPath     = "$ProjectRootPath/$TenantName"
 $BaseFolderPath     = "$TenantRootPath/Base"
@@ -141,6 +141,7 @@ function Add-SitecoreAIField {
     # Populate __Standard Values if DefaultValue is provided
     $stdValuesPath = "$TemplatePath/__Standard Values"
     if (($DefaultValue) -and (Test-Path -Path $stdValuesPath)) {
+        $fieldItem.Database.Engines.TemplateEngine.Reset()
         $stdValuesItem = Get-Item -Path $stdValuesPath
         $stdValuesItem.Editing.BeginEdit() | Out-Null
         $stdValuesItem[$FieldName] = $DefaultValue
@@ -185,7 +186,8 @@ function Ensure-SitecoreTemplate {
     # Ensure __Standard Values item
     $stdValuesPath = "$templatePath/__Standard Values"
     if (-not (Test-Path -Path $stdValuesPath)) {
-        $stdValuesItem = New-Item -Path $templatePath -Name "__Standard Values" -ItemType $templateItem.ID
+        $templateItem.Database.Engines.TemplateEngine.Reset()
+        $stdValuesItem = New-Item -Path $templatePath -Name "__Standard Values" -ItemType $templateItem.ID.ToString()
     }
     else {
         $stdValuesItem = Get-Item -Path $stdValuesPath
@@ -196,8 +198,11 @@ function Ensure-SitecoreTemplate {
     if (($InsertOptionIds) -and ($InsertOptionIds.Count -gt 0)) {
         $stdValuesItem["__Masters"] = ($InsertOptionIds -join "|")
     }
-    $templateItem["__Standard values"] = $stdValuesItem.ID.ToString()
     $stdValuesItem.Editing.EndEdit() | Out-Null
+
+    $templateItem.Editing.BeginEdit() | Out-Null
+    $templateItem["__Standard values"] = $stdValuesItem.ID.ToString()
+    $templateItem.Editing.EndEdit() | Out-Null
 
     return $templateItem
 }
@@ -211,6 +216,12 @@ try {
     Write-Host "============================================================" -ForegroundColor Cyan
 
     New-UsingBlock (New-Object Sitecore.Data.BulkUpdateContext) {
+
+        if (-not (Test-Path -Path $ProjectRootPath)) {
+            $parentOfRoot = Split-Path -Path $ProjectRootPath -Parent
+            $rootLeaf     = Split-Path -Path $ProjectRootPath -Leaf
+            Ensure-TemplateFolder -ParentPath $parentOfRoot -FolderName $rootLeaf | Out-Null
+        }
 
         Ensure-TemplateFolder -ParentPath $ProjectRootPath -FolderName $TenantName | Out-Null
         Ensure-TemplateFolder -ParentPath $TenantRootPath  -FolderName "Base" | Out-Null
@@ -299,7 +310,7 @@ try {
                     @{ Name = "DisplayMonth"; Type = "Single-Line Text"; Hint = "3-letter month badge shown on card (e.g., OCT)." },
                     @{ Name = "Author"; Type = "Single-Line Text"; Hint = "Author or coach name." },
                     @{ Name = "CommentCount"; Type = "Integer"; Hint = "Number of reader comments."; Default = "0" },
-                    @{ Name = "Image"; Type = "Image"; Source = "/sitecore/media library/Project/FitnessMaster/Blog"; Hint = "Featured article thumbnail image." },
+                    @{ Name = "Image"; Type = "Image"; Source = ""; Hint = "Featured article thumbnail image." },
                     @{ Name = "ArticleLink"; Type = "General Link"; Hint = "Link to full blog article page." }
                 )
             },
@@ -308,7 +319,7 @@ try {
                 Fields = @(
                     @{ Name = "CoachName"; Type = "Single-Line Text"; Hint = "Full name of the fitness coach." },
                     @{ Name = "Role"; Type = "Single-Line Text"; Hint = "Coach specialization title (e.g., Senior Nutritionist, Strength Coach)."; MaxLen = "45 chars" },
-                    @{ Name = "PortraitImage"; Type = "Image"; Source = "/sitecore/media library/Project/FitnessMaster/Coaches"; Hint = "High-resolution portrait of the coach." },
+                    @{ Name = "PortraitImage"; Type = "Image"; Source = ""; Hint = "High-resolution portrait of the coach." },
                     @{ Name = "TwitterLink"; Type = "General Link"; Hint = "Coach Twitter/X profile URL." },
                     @{ Name = "FacebookLink"; Type = "General Link"; Hint = "Coach Facebook profile URL." },
                     @{ Name = "InstagramLink"; Type = "General Link"; Hint = "Coach Instagram profile URL." }
@@ -319,7 +330,7 @@ try {
                 Fields = @(
                     @{ Name = "Title"; Type = "Single-Line Text"; Hint = "Caption title revealed on hover."; MaxLen = "50 chars" },
                     @{ Name = "Category"; Type = "Single-Line Text"; Hint = "Filter category tag (Fitness, Coaching, Events)."; Default = "Fitness" },
-                    @{ Name = "Image"; Type = "Image"; Source = "/sitecore/media library/Project/FitnessMaster/Gallery"; Hint = "Gallery showcase photograph." }
+                    @{ Name = "Image"; Type = "Image"; Source = ""; Hint = "Gallery showcase photograph." }
                 )
             },
             @{
@@ -344,7 +355,7 @@ try {
                     @{ Name = "Price"; Type = "Single-Line Text"; Hint = "Formatted display price (e.g., $49.99)." },
                     @{ Name = "Category"; Type = "Single-Line Text"; Hint = "Product category name for filtering." },
                     @{ Name = "Badge"; Type = "Single-Line Text"; Hint = "Optional promotional badge (e.g., Sale, New, Best Seller)." },
-                    @{ Name = "Image"; Type = "Image"; Source = "/sitecore/media library/Project/FitnessMaster/Products"; Hint = "Product studio image." },
+                    @{ Name = "Image"; Type = "Image"; Source = ""; Hint = "Product studio image." },
                     @{ Name = "ProductLink"; Type = "General Link"; Hint = "Link to product detail or checkout." }
                 )
             },
@@ -361,7 +372,7 @@ try {
                     @{ Name = "Title"; Type = "Single-Line Text"; Hint = "Service name (e.g., Weight Loss Program, Sports Nutrition)."; MaxLen = "45 chars" },
                     @{ Name = "Description"; Type = "Multi-Line Text"; Hint = "Benefit-driven summary of the coaching service."; MaxLen = "160 chars" },
                     @{ Name = "IconName"; Type = "Single-Line Text"; Hint = "Icon identifier for ServicesPreview (e.g., FaAppleAlt, FaDumbbell, FaHeartbeat)." },
-                    @{ Name = "Image"; Type = "Image"; Source = "/sitecore/media library/Project/FitnessMaster/Services"; Hint = "Service card cover image for ServicesGrid." },
+                    @{ Name = "Image"; Type = "Image"; Source = ""; Hint = "Service card cover image for ServicesGrid." },
                     @{ Name = "ServiceLink"; Type = "General Link"; Hint = "CTA link to service details page." }
                 )
             },
@@ -379,7 +390,7 @@ try {
                     @{ Name = "ClientRole"; Type = "Single-Line Text"; Hint = "Client occupation or persona description (e.g., Marketing Executive)." },
                     @{ Name = "QuoteContent"; Type = "Multi-Line Text"; Hint = "Authentic client success story quote."; MaxLen = "220 chars" },
                     @{ Name = "Rating"; Type = "Integer"; Hint = "Star rating from 1 to 5."; Default = "5" },
-                    @{ Name = "AvatarImage"; Type = "Image"; Source = "/sitecore/media library/Project/FitnessMaster/Testimonials"; Hint = "Circular avatar photo of the client." }
+                    @{ Name = "AvatarImage"; Type = "Image"; Source = ""; Hint = "Circular avatar photo of the client." }
                 )
             }
         )
@@ -430,7 +441,7 @@ try {
                     @{ Section = "Content"; Name = "FeatureHighlights"; Type = "Multilist"; Source = "query:./*[@@templatename='FeatureHighlightItem']"; Hint = "Checklist items displayed with checkmarks." },
                     @{ Section = "Experience Badge"; Name = "ExperienceYears"; Type = "Single-Line Text"; Default = "24+"; Hint = "Highlighted counter number in the floating badge."; MaxLen = "10 chars" },
                     @{ Section = "Experience Badge"; Name = "ExperienceLabel"; Type = "Single-Line Text"; Default = "Years of Experience"; Hint = "Caption next to the experience counter."; MaxLen = "30 chars" },
-                    @{ Section = "Media & CTA"; Name = "MainImage"; Type = "Image"; Source = "/sitecore/media library/Project/FitnessMaster/About"; Hint = "Feature portrait image for AboutSnippet." },
+                    @{ Section = "Media & CTA"; Name = "MainImage"; Type = "Image"; Source = ""; Hint = "Feature portrait image for AboutSnippet." },
                     @{ Section = "Media & CTA"; Name = "CtaLink"; Type = "General Link"; Hint = "Primary CTA button (Discover Our Story)." }
                 )
             },
@@ -544,7 +555,7 @@ try {
                 Fields = @(
                     @{ Section = "Banner Content"; Name = "Title"; Type = "Single-Line Text"; Default = "Our Services"; Hint = "Inner-page hero H1 headline."; MaxLen = "60 chars" },
                     @{ Section = "Banner Content"; Name = "PageName"; Type = "Single-Line Text"; Default = "Services"; Hint = "Current page label displayed in the breadcrumb trail."; MaxLen = "30 chars" },
-                    @{ Section = "Banner Content"; Name = "BackgroundImage"; Type = "Image"; Source = "/sitecore/media library/Project/FitnessMaster/Banners"; Hint = "Full-bleed dark overlay background image." }
+                    @{ Section = "Banner Content"; Name = "BackgroundImage"; Type = "Image"; Source = ""; Hint = "Full-bleed dark overlay background image." }
                 )
             },
             @{
@@ -554,7 +565,7 @@ try {
                     @{ Section = "Hero Content"; Name = "EyebrowText"; Type = "Single-Line Text"; Default = "Transform Your Life"; Hint = "Uppercase accent badge above main hero headline."; MaxLen = "35 chars" },
                     @{ Section = "Hero Content"; Name = "Headline"; Type = "Rich Text"; Default = "Eat Mindfully, <br />Sweat Often & <br />Self Love Always"; Hint = "High-impact primary hero headline."; MaxLen = "90 chars" },
                     @{ Section = "Hero Content"; Name = "Description"; Type = "Multi-Line Text"; Default = "Discover a balanced approach to fitness and nutrition. Our personalized coaching programs are designed to help you achieve sustainable results."; Hint = "Supporting value proposition subheadline."; MaxLen = "180 chars" },
-                    @{ Section = "Media & Actions"; Name = "BackgroundImage"; Type = "Image"; Source = "/sitecore/media library/Project/FitnessMaster/Hero"; Hint = "Full-screen hero background image." },
+                    @{ Section = "Media & Actions"; Name = "BackgroundImage"; Type = "Image"; Source = ""; Hint = "Full-screen hero background image." },
                     @{ Section = "Media & Actions"; Name = "PrimaryCta"; Type = "General Link"; Hint = "Primary CTA button (Make an Appointment)." },
                     @{ Section = "Media & Actions"; Name = "SecondaryCta"; Type = "General Link"; Hint = "Secondary outline CTA button (Explore Services)." }
                 )
@@ -619,7 +630,7 @@ try {
                 Name = "StatsSection"; Icon = "Office/32x32/chart_line.png";
                 InsertOptions = @($childTemplateIds["StatItem"]);
                 Fields = @(
-                    @{ Section = "Statistics Content"; Name = "BackgroundImage"; Type = "Image"; Source = "/sitecore/media library/Project/FitnessMaster/Banners"; Hint = "Dark-overlay background photo behind stat counters." },
+                    @{ Section = "Statistics Content"; Name = "BackgroundImage"; Type = "Image"; Source = ""; Hint = "Dark-overlay background photo behind stat counters." },
                     @{ Section = "Statistics Content"; Name = "Stats"; Type = "Multilist"; Source = "query:./*[@@templatename='StatItem']"; Hint = "Up to 4 StatItem counter datasources." }
                 )
             },
@@ -697,4 +708,3 @@ catch {
     Write-Host "[!] Error provisioning Sitecore AI Templates: $($_.Exception.Message)" -ForegroundColor Red
     throw
 }
-
