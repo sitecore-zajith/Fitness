@@ -1,106 +1,95 @@
-# Sitecore AI (XM Cloud / Headless JSS) Template & Field Guide
+# Sitecore AI (XM Cloud / Headless JSS) Template & Base Inheritance Guide
 
-## 1. Overview & Architecture
+## 1. Why `_SitecoreAI_Metadata` is NOT Mandatory
 
-This specification documents the conversion of all **19 Organism components** in `src/components/organisms/` into **Sitecore XM Cloud / Sitecore AI Project-layer templates** under `/sitecore/templates/Project/FitnessMaster`.
-
-The accompanying Sitecore PowerShell Extensions (SPE) script ([`Create-SitecoreAITemplates.ps1`](file:///c:/Users/MohamedZajith/projects/fitness-master/planning/Create-SitecoreAITemplates.ps1)) automates:
-1. **Shared Sitecore AI Base Template** (`/sitecore/templates/Project/FitnessMaster/Base/_SitecoreAI_Metadata`) inherited by all component and child item templates.
-2. **11 Child Datasource Item Templates** (`/sitecore/templates/Project/FitnessMaster/DatasourceItems/*`) for list, grid, and card organisms.
-3. **19 Organism Templates** (`/sitecore/templates/Project/FitnessMaster/Organisms/*`) with `__Standard Values`, Insert Options (`__Masters`), and Sitecore AI prompt metadata (`__Short description` & `__Long description`).
-4. **Reusable `Add-SitecoreAIField` Function** showing how to add any new field with Sitecore AI / Stream generation instructions.
+In **Sitecore XM Cloud / Sitecore AI (Sitecore Stream)**:
+- **Native AI Support on Standard Fields:** Sitecore AI Copilot automatically works on any `Single-Line Text`, `Multi-Line Text`, and `Rich Text` field in Pages and Content Editor without needing custom AI fields on the item.
+- **Field-Level Metadata (`__Short description` & `__Long description`):** The [`Add-SitecoreAIField`](file:///c:/Users/MohamedZajith/projects/fitness-master/plan/Create-SitecoreAITemplates.ps1#L94-L163) helper stores AI generation instructions directly on the Template Field item's description properties.
+- **Optional Toggle:** In [`plan/Create-SitecoreAITemplates.ps1`](file:///c:/Users/MohamedZajith/projects/fitness-master/plan/Create-SitecoreAITemplates.ps1#L40), `$IncludeSitecoreAIBase = $false` is disabled by default so your items are not cluttered with extra metadata fields.
 
 ---
 
-## 2. Sitecore Template Tree Structure
+## 2. Common Variable Inheritance Architecture (`Base/*`)
 
-```text
-/sitecore/templates/Project/FitnessMaster
-├── Base
-│   └── _SitecoreAI_Metadata
-├── DatasourceItems
-│   ├── BlogPostItem
-│   ├── CoachItem
-│   ├── FeatureHighlightItem
-│   ├── GalleryItem
-│   ├── NavigationLinkItem
-│   ├── ProcedureStepItem
-│   ├── ProductCategoryItem
-│   ├── ProductItem
-│   ├── ServiceItem
-│   ├── StatItem
-│   └── TestimonialItem
-└── Organisms
-    ├── AboutSnippet
-    ├── AppointmentForm
-    ├── BlogGrid
-    ├── CoachesSection
-    ├── ContactForm
-    ├── ContactInfoSection
-    ├── ContactMap
-    ├── Footer
-    ├── GalleryGrid
-    ├── HeroSection
-    ├── HomeHero
-    ├── Navbar
-    ├── Procedure
-    ├── ProductCatalog
-    ├── ProductSidebar
-    ├── ServicesGrid
-    ├── ServicesPreview
-    ├── StatsSection
-    └── Testimonials
-```
+Instead of duplicating common variables (`Title`, `Subtitle`, `Description`, `Image`, `CtaLink`, `Address`, `Phone`, `Email`, Social Links, Brand Identity, Pagination) across Organism and Datasource templates, the script extracts **9 modular Base Templates** under `/sitecore/templates/Project/Corporate/FitnessMaster/Base` and assigns them via `__Base template` inheritance only where needed:
+
+| Base Template (`Base/*`) | Common Variables (Fields) | Inherited By (`DatasourceItems/*`) | Inherited By (`Organisms/*`) |
+| :--- | :--- | :--- | :--- |
+| **`_BaseTitle`** | `Title` (`Single-Line Text`) | `FeatureHighlightItem`, `BlogPostItem`, `CoachItem`, `GalleryItem`, `NavigationLinkItem`, `ProcedureStepItem`, `ProductItem`, `ProductCategoryItem`, `ServiceItem`, `StatItem`, `TestimonialItem` | `ContactForm`, `ContactInfoSection`, `ContactMap`, `HeroSection`, `ProductSidebar`, plus all `_BaseSectionHeading` consumers |
+| **`_BaseSectionHeading`** *(inherits `_BaseTitle`)* | `Subtitle` (`Single-Line Text`) + `Title` | *(None)* | `AboutSnippet`, `AppointmentForm`, `CoachesSection`, `HomeHero`, `Procedure`, `ServicesPreview`, `Testimonials` |
+| **`_BaseDescription`** | `Description` (`Multi-Line Text`) | `BlogPostItem`, `ProcedureStepItem`, `ServiceItem`, `TestimonialItem` | `AppointmentForm`, `ContactInfoSection`, `Footer`, `HomeHero` |
+| **`_BaseMedia`** | `Image` (`Image`) | `BlogPostItem`, `CoachItem`, `GalleryItem`, `ProductItem`, `ServiceItem`, `TestimonialItem` | `AboutSnippet`, `HeroSection`, `HomeHero`, `StatsSection` |
+| **`_BaseCta`** | `CtaLink` (`General Link`) | `BlogPostItem`, `NavigationLinkItem`, `ProductItem`, `ServiceItem` | `AboutSnippet`, `HomeHero`, `Navbar` |
+| **`_BaseContactInfo`** | `Address`, `Phone`, `Email` (`Single-Line Text`) | *(None)* | `AppointmentForm`, `ContactInfoSection`, `Footer` |
+| **`_BaseSocialLinks`** | `FacebookLink`, `TwitterLink`, `InstagramLink`, `YoutubeLink` (`General Link`) | `CoachItem` | `Footer` |
+| **`_BaseBrandIdentity`** | `BrandPrefix`, `BrandSuffix` (`Single-Line Text`) | *(None)* | `Navbar`, `Footer` |
+| **`_BasePagination`** | `PageSize`, `TotalPages`, `TotalResults` (`Integer`) | *(None)* | `BlogGrid`, `ProductCatalog` |
 
 ---
 
-## 3. Shared Sitecore AI Base Template (`_SitecoreAI_Metadata`)
+## 3. Complete Inheritance Mapping
 
-Every Organism and Datasource Item inherits `_SitecoreAI_Metadata` (`Section: Sitecore AI Configuration`, SortOrder `900`), giving content authors and Sitecore Stream / AI Copilot structured context for content generation, tone enforcement, and personalization:
+### 3.1 Child Datasource Item Templates (`DatasourceItems/*`)
 
-| Field Name | Field Title | Sitecore Field Type | Default Value / Source | Sitecore AI Purpose |
-| :--- | :--- | :--- | :--- | :--- |
-| `AIPromptContext` | AI Prompt Context | `Multi-Line Text` | `Health, nutrition, and holistic fitness coaching by FitLifeCoach.` | Component-level system prompt context passed to Sitecore AI when generating copy. |
-| `AIToneOfVoice` | AI Tone of Voice | `Droplink` | `query:./ancestor-or-self::*[@@templatename='Site']/Data/AI Configuration/Tones` | Selects brand tone (`Motivational`, `Clinical`, `Empathetic`, `High-Energy`). |
-| `AITargetAudience` | AI Target Audience Persona | `Single-Line Text` | `Health-conscious adults seeking sustainable fitness and nutrition coaching` | Guides AI copywriting and personalization toward a specific visitor segment. |
-| `AIPersonalizationVariant` | AI Personalization Variant Key | `Single-Line Text` | `default` | Maps the datasource item to a Sitecore Personalize / AI audience variant. |
-| `AIAutoSummary` | AI Auto-Summary / SEO Snippet | `Multi-Line Text` | *(Empty)* | AI-generated summary (max 160 chars) for GEO/SEO and screen-reader context. |
-| `AIEnableAutoTranslation` | Enable AI Auto-Translation | `Checkbox` | `1` (Checked) | Allows Sitecore Stream AI to automatically localize this datasource across languages. |
+| Datasource Template | Inherited Base Templates (`__Base template`) | Template-Specific Own Fields |
+| :--- | :--- | :--- |
+| `FeatureHighlightItem` | `_BaseTitle` | *(Uses inherited `Title`)* |
+| `BlogPostItem` | `_BaseTitle`, `_BaseDescription`, `_BaseMedia`, `_BaseCta` | `PublishDate` (Date), `DisplayDay`, `DisplayMonth`, `Author`, `CommentCount` (Integer) |
+| `CoachItem` | `_BaseTitle`, `_BaseMedia`, `_BaseSocialLinks` | `Role` (Single-Line Text) |
+| `GalleryItem` | `_BaseTitle`, `_BaseMedia` | `Category` (Single-Line Text) |
+| `NavigationLinkItem` | `_BaseTitle`, `_BaseCta` | *(Uses inherited `Title` & `CtaLink`)* |
+| `ProcedureStepItem` | `_BaseTitle`, `_BaseDescription` | `StepNumber` (Single-Line Text) |
+| `ProductItem` | `_BaseTitle`, `_BaseMedia`, `_BaseCta` | `Price`, `Category`, `Badge` (Single-Line Text) |
+| `ProductCategoryItem` | `_BaseTitle` | `ItemCount` (Integer) |
+| `ServiceItem` | `_BaseTitle`, `_BaseDescription`, `_BaseMedia`, `_BaseCta` | `IconName` (Single-Line Text) |
+| `StatItem` | `_BaseTitle` | `Value` (Single-Line Text) |
+| `TestimonialItem` | `_BaseTitle`, `_BaseDescription`, `_BaseMedia` | `ClientRole` (Single-Line Text), `Rating` (Integer) |
+
+### 3.2 Organism Component Templates (`Organisms/*`)
+
+| # | Organism Template | Inherited Base Templates (`__Base template`) | Organism-Specific Own Fields | Insert Options (`__Masters`) |
+| :- | :--- | :--- | :--- | :--- |
+| 1 | `AboutSnippet` | `_BaseSectionHeading`, `_BaseMedia`, `_BaseCta` | `PrimaryParagraph` (Rich Text), `SecondaryParagraph` (Rich Text), `FeatureHighlights` (Multilist), `ExperienceYears`, `ExperienceLabel` | `FeatureHighlightItem` |
+| 2 | `AppointmentForm` | `_BaseSectionHeading`, `_BaseDescription`, `_BaseContactInfo` | `PanelTitle`, `ServiceOptions` (Multilist), `SubmitButtonText`, `SubmitEndpoint` | `ServiceItem` |
+| 3 | `BlogGrid` | `_BasePagination` | `Posts` (Multilist) | `BlogPostItem` |
+| 4 | `CoachesSection` | `_BaseSectionHeading` | `Coaches` (Multilist) | `CoachItem` |
+| 5 | `ContactForm` | `_BaseTitle` | `NameLabel`, `EmailLabel`, `PhoneLabel`, `SubjectLabel`, `MessageLabel`, `SubmitButtonText`, `SubmissionApiUrl` | *(None)* |
+| 6 | `ContactInfoSection` | `_BaseTitle`, `_BaseDescription`, `_BaseContactInfo` | `LocationTitle`, `PhoneTitle`, `EmailTitle`, `HoursTitle`, `OperatingHours` (Multi-Line Text) | *(None)* |
+| 7 | `ContactMap` | `_BaseTitle` | `MapEmbedUrl` (Single-Line Text) | *(None)* |
+| 8 | `Footer` | `_BaseBrandIdentity`, `_BaseDescription`, `_BaseSocialLinks`, `_BaseContactInfo` | `QuickLinksHeading`, `QuickLinks` (Multilist), `ServicesHeading`, `ServiceLinks` (Multilist), `ContactHeading`, `CopyrightText` | `NavigationLinkItem` |
+| 9 | `GalleryGrid` | *(Standard Template)* | `FilterCategories`, `DefaultCategory`, `GalleryItems` (Multilist), `LoadMoreButtonText` | `GalleryItem` |
+| 10 | `HeroSection` | `_BaseTitle`, `_BaseMedia` | `PageName` (Single-Line Text) | *(None)* |
+| 11 | `HomeHero` | `_BaseSectionHeading`, `_BaseDescription`, `_BaseMedia`, `_BaseCta` | `SecondaryCta` (General Link), `AIGeneratedPromoBadge` | *(None)* |
+| 12 | `Navbar` | `_BaseBrandIdentity`, `_BaseCta` | `NavigationLinks` (Multilist), `MobileCtaLink` (General Link) | `NavigationLinkItem` |
+| 13 | `Procedure` | `_BaseSectionHeading` | `Steps` (Multilist) | `ProcedureStepItem` |
+| 14 | `ProductCatalog` | `_BasePagination` | `Products` (Multilist) | `ProductItem` |
+| 15 | `ProductSidebar` | `_BaseTitle` | `SearchPlaceholder`, `Categories` (Multilist), `EnablePriceFilter` (Checkbox) | `ProductCategoryItem` |
+| 16 | `ServicesGrid` | *(Standard Template)* | `Services` (Multilist) | `ServiceItem` |
+| 17 | `ServicesPreview` | `_BaseSectionHeading` | `FeaturedServices` (Multilist) | `ServiceItem` |
+| 18 | `StatsSection` | `_BaseMedia` | `Stats` (Multilist) | `StatItem` |
+| 19 | `Testimonials` | `_BaseSectionHeading` | `TestimonialsList` (Multilist) | `TestimonialItem` |
 
 ---
 
-## 4. How to Create Another Field Using Sitecore AI Information
+## 4. How to Add Another Field Using Sitecore AI Information
 
-When you want to add a new field to **any** organism template and enrich it with Sitecore AI generation metadata, use the `Add-SitecoreAIField` helper function in **Sitecore ISE (PowerShell Console)**.
-
-### 4.1 Reusable SPE Pattern (`Add-SitecoreAIField`)
+Use [`Add-SitecoreAIField`](file:///c:/Users/MohamedZajith/projects/fitness-master/plan/Create-SitecoreAITemplates.ps1#L94-L163) to add a field either to a **shared Base Template** (so all inheriting Organisms/Datasources receive it automatically) or to a **single Organism Template**:
 
 ```powershell
-# ============================================================================
-# TEMPLATE: Add a new AI-enabled field to an existing Organism Template
-# ============================================================================
-$OrganismsRoot = "master:/sitecore/templates/Project/FitnessMaster/Organisms"
-
+# Option 1: Add a shared field to a Base Template (inherited everywhere _BaseSectionHeading is used)
 Add-SitecoreAIField `
-    -TemplatePath "$OrganismsRoot/<OrganismTemplateName>" `
-    -SectionName "<SectionName>" `
-    -SectionSortOrder 100 `
-    -FieldName "<FieldName>" `
-    -FieldTitle "<HumanReadableTitle>" `
-    -FieldType "<SitecoreFieldType>" `
-    -Source "<OptionalDatasourceOrMediaPath>" `
-    -SortOrder 800 `
-    -AIPromptHint "<Prompt instructions telling Sitecore AI how to generate this field>" `
-    -AIMaxLengthHint "<Character/word limit for AI output>" `
-    -DefaultValue "<StandardValuesDefault>"
-```
+    -TemplatePath "master:/sitecore/templates/Project/Corporate/FitnessMaster/Base/_BaseSectionHeading" `
+    -SectionName "Common Heading" `
+    -FieldName "HeadingAlignment" `
+    -FieldTitle "Heading Alignment" `
+    -FieldType "Single-Line Text" `
+    -SortOrder 300 `
+    -AIPromptHint "Alignment token for section header (left, center)." `
+    -DefaultValue "center"
 
-### 4.2 Concrete Examples
-
-#### Example A: Adding an `AIGeneratedPromoBadge` field to `HomeHero`
-```powershell
+# Option 2: Add a field to a specific Organism Template
 Add-SitecoreAIField `
-    -TemplatePath "master:/sitecore/templates/Project/FitnessMaster/Organisms/HomeHero" `
+    -TemplatePath "master:/sitecore/templates/Project/Corporate/FitnessMaster/Organisms/HomeHero" `
     -SectionName "Hero Content" `
     -FieldName "AIGeneratedPromoBadge" `
     -FieldTitle "AI Promotional Badge Text" `
@@ -110,65 +99,3 @@ Add-SitecoreAIField `
     -AIMaxLengthHint "40 characters" `
     -DefaultValue "Free 7-Day Nutrition Assessment"
 ```
-
-#### Example B: Adding an `AIKeyTakeaways` Rich Text field to `BlogPostItem`
-```powershell
-Add-SitecoreAIField `
-    -TemplatePath "master:/sitecore/templates/Project/FitnessMaster/DatasourceItems/BlogPostItem" `
-    -SectionName "Article Data" `
-    -FieldName "AIKeyTakeaways" `
-    -FieldTitle "AI Article Key Takeaways" `
-    -FieldType "Rich Text" `
-    -SortOrder 950 `
-    -AIPromptHint "Summarize the article into 3 actionable nutrition or workout bullet points." `
-    -AIMaxLengthHint "3 bullets, max 45 words total" `
-    -DefaultValue "<ul><li>Stay hydrated daily</li><li>Prioritize whole foods</li><li>Train consistently</li></ul>"
-```
-
-#### Example C: Adding an `AINutritionGoalTag` Droplink field to `ServicesGrid`
-```powershell
-Add-SitecoreAIField `
-    -TemplatePath "master:/sitecore/templates/Project/FitnessMaster/Organisms/ServicesGrid" `
-    -SectionName "Services Catalog" `
-    -FieldName "AINutritionGoalTag" `
-    -FieldTitle "AI Recommended Fitness Goal Filter" `
-    -FieldType "Droplink" `
-    -Source "query:./ancestor-or-self::*[@@templatename='Site']/Data/Goals" `
-    -SortOrder 200 `
-    -AIPromptHint "Select the primary fitness goal category used by Sitecore AI to recommend services."
-```
-
----
-
-## 5. Complete Organism-to-Sitecore Template Mapping (All 19 Organisms)
-
-| # | Next.js Organism Component | Sitecore Template Path | Insert Options (`__Masters`) | Component Fields (`Name : Type`) |
-| :- | :--- | :--- | :--- | :--- |
-| 1 | [`AboutSnippet.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/AboutSnippet.tsx) | `Organisms/AboutSnippet` | `FeatureHighlightItem` | `Subtitle` (Single-Line Text), `Title` (Single-Line Text), `PrimaryParagraph` (Rich Text), `SecondaryParagraph` (Rich Text), `FeatureHighlights` (Multilist), `ExperienceYears` (Single-Line Text), `ExperienceLabel` (Single-Line Text), `MainImage` (Image), `CtaLink` (General Link) |
-| 2 | [`AppointmentForm.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/AppointmentForm.tsx) | `Organisms/AppointmentForm` | `ServiceItem` | `PanelTitle` (Single-Line Text), `PanelDescription` (Multi-Line Text), `Address` (Single-Line Text), `Phone` (Single-Line Text), `Email` (Single-Line Text), `FormSubtitle` (Single-Line Text), `FormTitle` (Single-Line Text), `ServiceOptions` (Multilist), `SubmitButtonText` (Single-Line Text), `SubmitEndpoint` (Single-Line Text) |
-| 3 | [`BlogGrid.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/BlogGrid.tsx) | `Organisms/BlogGrid` | `BlogPostItem` | `Posts` (Multilist), `PageSize` (Integer), `TotalPages` (Integer) |
-| 4 | [`CoachesSection.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/CoachesSection.tsx) | `Organisms/CoachesSection` | `CoachItem` | `Subtitle` (Single-Line Text), `Title` (Single-Line Text), `Coaches` (Multilist) |
-| 5 | [`ContactForm.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/ContactForm.tsx) | `Organisms/ContactForm` | *(None)* | `FormHeading` (Single-Line Text), `NameLabel` (Single-Line Text), `EmailLabel` (Single-Line Text), `PhoneLabel` (Single-Line Text), `SubjectLabel` (Single-Line Text), `MessageLabel` (Single-Line Text), `SubmitButtonText` (Single-Line Text), `SubmissionApiUrl` (Single-Line Text) |
-| 6 | [`ContactInfoSection.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/ContactInfoSection.tsx) | `Organisms/ContactInfoSection` | *(None)* | `Title` (Single-Line Text), `Description` (Multi-Line Text), `LocationTitle` (Single-Line Text), `AddressLines` (Multi-Line Text), `PhoneTitle` (Single-Line Text), `PhoneNumber` (Single-Line Text), `EmailTitle` (Single-Line Text), `EmailAddresses` (Multi-Line Text), `HoursTitle` (Single-Line Text), `OperatingHours` (Multi-Line Text) |
-| 7 | [`ContactMap.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/ContactMap.tsx) | `Organisms/ContactMap` | *(None)* | `MapEmbedUrl` (Single-Line Text), `MapTitle` (Single-Line Text) |
-| 8 | [`Footer.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/Footer.tsx) | `Organisms/Footer` | `NavigationLinkItem` | `BrandPrefix`, `BrandHighlight`, `BrandSummary` (Multi-Line Text), `FacebookUrl`, `InstagramUrl`, `TwitterUrl`, `YoutubeUrl` (General Links), `QuickLinksHeading`, `QuickLinks` (Multilist), `ServicesHeading`, `ServiceLinks` (Multilist), `ContactHeading`, `Address`, `Email`, `Phone`, `CopyrightText` |
-| 9 | [`GalleryGrid.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/GalleryGrid.tsx) | `Organisms/GalleryGrid` | `GalleryItem` | `FilterCategories` (Single-Line Text), `DefaultCategory` (Single-Line Text), `GalleryItems` (Multilist), `LoadMoreButtonText` (Single-Line Text) |
-| 10 | [`HeroSection.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/HeroSection.tsx) | `Organisms/HeroSection` | *(None)* | `Title` (Single-Line Text), `PageName` (Single-Line Text), `BackgroundImage` (Image) |
-| 11 | [`HomeHero.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/HomeHero.tsx) | `Organisms/HomeHero` | *(None)* | `EyebrowText` (Single-Line Text), `Headline` (Rich Text), `Description` (Multi-Line Text), `BackgroundImage` (Image), `PrimaryCta` (General Link), `SecondaryCta` (General Link), `AIGeneratedPromoBadge` (Single-Line Text) |
-| 12 | [`Navbar.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/Navbar.tsx) | `Organisms/Navbar` | `NavigationLinkItem` | `BrandPrefix` (Single-Line Text), `BrandSuffix` (Single-Line Text), `NavigationLinks` (Multilist), `DesktopCtaLink` (General Link), `MobileCtaLink` (General Link) |
-| 13 | [`Procedure.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/Procedure.tsx) | `Organisms/Procedure` | `ProcedureStepItem` | `Subtitle` (Single-Line Text), `Title` (Single-Line Text), `Steps` (Multilist) |
-| 14 | [`ProductCatalog.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/ProductCatalog.tsx) | `Organisms/ProductCatalog` | `ProductItem` | `Products` (Multilist), `TotalResults` (Integer), `ShownCount` (Integer), `TotalPages` (Integer) |
-| 15 | [`ProductSidebar.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/ProductSidebar.tsx) | `Organisms/ProductSidebar` | `ProductCategoryItem` | `SearchHeading` (Single-Line Text), `SearchPlaceholder` (Single-Line Text), `Categories` (Multilist), `EnablePriceFilter` (Checkbox) |
-| 16 | [`ServicesGrid.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/ServicesGrid.tsx) | `Organisms/ServicesGrid` | `ServiceItem` | `Services` (Multilist) |
-| 17 | [`ServicesPreview.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/ServicesPreview.tsx) | `Organisms/ServicesPreview` | `ServiceItem` | `Subtitle` (Single-Line Text), `Title` (Single-Line Text), `FeaturedServices` (Multilist) |
-| 18 | [`StatsSection.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/StatsSection.tsx) | `Organisms/StatsSection` | `StatItem` | `BackgroundImage` (Image), `Stats` (Multilist) |
-| 19 | [`Testimonials.tsx`](file:///c:/Users/MohamedZajith/projects/fitness-master/src/components/organisms/Testimonials.tsx) | `Organisms/Testimonials` | `TestimonialItem` | `Subtitle` (Single-Line Text), `Title` (Single-Line Text), `TestimonialsList` (Multilist) |
-
----
-
-## 6. How to Execute in Sitecore
-
-1. Log in to **Sitecore Desktop** → **Development Tools** → **PowerShell ISE**.
-2. Open or paste [`planning/Create-SitecoreAITemplates.ps1`](file:///c:/Users/MohamedZajith/projects/fitness-master/planning/Create-SitecoreAITemplates.ps1).
-3. Ensure the context database is set to `master`.
-4. Click **Execute**. The script runs inside a `Sitecore.Data.BulkUpdateContext` for fast execution and is **idempotent** (safe to re-run whenever you add new fields).
