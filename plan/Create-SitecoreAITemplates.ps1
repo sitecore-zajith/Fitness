@@ -23,6 +23,9 @@
       5. Renderings/*       - 19 Json Renderings under
                               master:/sitecore/layout/Renderings/Project/Corporate/FitnessMaster
                               mapped 1:1 to Organisms/* (componentName, Datasource Template/Location)
+      6. Available Renderings - Site presentation tree under
+                              master:/sitecore/content/Corporate/FitLife/Presentation/Available Renderings
+                              with a FitnessMaster item listing all 19 renderings
 .NOTES
     Target Environment : Sitecore XM Cloud / Sitecore XP with SPE (Execute in Sitecore ISE)
     Encoding           : ASCII-safe
@@ -54,6 +57,23 @@ $JsonRenderingId    = "{04646A89-996F-4EE7-878A-FFDBF1F0EF0D}"
 $RenderingFolderId  = "{7EE0975B-0698-493E-B3A2-0B2EF33D0522}"
 $RenderingsRootPath = "master:/sitecore/layout/Renderings/Project/Corporate"
 $RenderingsPath     = "$RenderingsRootPath/$TenantName"
+
+# Content tree (SXA headless site): /sitecore/content/Corporate/fitlifecoach/Presentation/Available Renderings
+$ContentRootPath             = "master:/sitecore/content"
+$SiteCollectionName          = "Corporate"
+$SiteName                    = "fitlifecoach"
+$AvailableRenderingsItemName = $TenantName   # Group shown in the Pages/Experience Editor toolbox
+$SitePath                    = "$ContentRootPath/$SiteCollectionName/$SiteName"
+$PresentationPath            = "$SitePath/Presentation"
+$AvailableRenderingsPath     = "$PresentationPath/Available Renderings"
+
+# SXA / JSS system templates (resolved by path at runtime; fallback used when SXA is not installed)
+$CommonFolderId                   = "{A87A00B1-E6DB-45AB-8B54-636FEC3B5523}"
+$HeadlessTenantTemplatePath       = "master:/sitecore/templates/Foundation/JSS Experience Accelerator/Multisite/Headless Tenant"
+$HeadlessSiteTemplatePath         = "master:/sitecore/templates/Foundation/JSS Experience Accelerator/Multisite/Headless Site"
+$PresentationTemplatePath         = "master:/sitecore/templates/Foundation/Experience Accelerator/Presentation/Presentation"
+$AvailableRenderingsFolderTplPath = "master:/sitecore/templates/Foundation/Experience Accelerator/Presentation/Available Renderings/Available Renderings Folder"
+$AvailableRenderingsTplPath       = "master:/sitecore/templates/Foundation/Experience Accelerator/Presentation/Available Renderings/Available Renderings"
 
 # Minimum number of common fields required to qualify as a Base Template
 $MinBaseTemplateFields = 2
@@ -119,6 +139,48 @@ function Ensure-JsonRendering {
     $renderingItem.Editing.EndEdit() | Out-Null
 
     return $renderingItem
+}
+
+<#
+.SYNOPSIS
+    Returns the ID of the template at TemplatePath, or FallbackId when it does not exist.
+    Throws when neither is available.
+#>
+function Resolve-TemplateId {
+    param(
+        [Parameter(Mandatory = $true)][string]$TemplatePath,
+        [string]$FallbackId = ""
+    )
+
+    if (Test-Path -Path $TemplatePath) {
+        return (Get-Item -Path $TemplatePath).ID.ToString()
+    }
+    if ($FallbackId) {
+        Write-Warning "[WARN] Template not found: $TemplatePath. Falling back to $FallbackId."
+        return $FallbackId
+    }
+    throw "Required template not found: $TemplatePath"
+}
+
+<#
+.SYNOPSIS
+    Returns the content item at ParentPath/ItemName, creating it from TemplateId when missing.
+#>
+function Ensure-ContentItem {
+    param(
+        [Parameter(Mandatory = $true)][string]$ParentPath,
+        [Parameter(Mandatory = $true)][string]$ItemName,
+        [Parameter(Mandatory = $true)][string]$TemplateId
+    )
+
+    $itemPath = "$ParentPath/$ItemName"
+    if (Test-Path -Path $itemPath) {
+        Write-Host "[i] Content item exists: $itemPath" -ForegroundColor Gray
+        return Get-Item -Path $itemPath
+    }
+
+    Write-Host "[+] Creating Content Item: $itemPath" -ForegroundColor Cyan
+    return New-Item -Path $ParentPath -Name $ItemName -ItemType $TemplateId
 }
 
 function Ensure-TemplateSection {
@@ -895,6 +957,7 @@ try {
             Footer = @{ "Datasource Location" = "$DataRootQuery/Global|$DataRootQuery" }
         }
 
+        $renderingIds = @()
         foreach ($org in $organisms) {
             $tpl = $organismTemplates[$org.Name]
 
@@ -915,8 +978,31 @@ try {
                 }
             }
 
-            Ensure-JsonRendering -ParentPath $RenderingsPath -RenderingName $org.Name -Fields $renderingFields | Out-Null
+            $renderingItem = Ensure-JsonRendering -ParentPath $RenderingsPath -RenderingName $org.Name -Fields $renderingFields
+            $renderingIds += $renderingItem.ID.ToString()
         }
+
+        # ====================================================================
+        # 9. CREATE SITE PRESENTATION + AVAILABLE RENDERINGS
+        #    master:/sitecore/content/Corporate/FitLife/Presentation/Available Renderings/FitnessMaster
+        #    -> Lists every rendering above so authors can add them in Pages / Experience Editor.
+        # ====================================================================
+        $tenantTplId     = Resolve-TemplateId -TemplatePath $HeadlessTenantTemplatePath -FallbackId $CommonFolderId
+        $siteTplId       = Resolve-TemplateId -TemplatePath $HeadlessSiteTemplatePath -FallbackId $CommonFolderId
+        $presentationId  = Resolve-TemplateId -TemplatePath $PresentationTemplatePath -FallbackId $CommonFolderId
+        $arFolderTplId   = Resolve-TemplateId -TemplatePath $AvailableRenderingsFolderTplPath -FallbackId $CommonFolderId
+        $arItemTplId     = Resolve-TemplateId -TemplatePath $AvailableRenderingsTplPath
+
+        Ensure-ContentItem -ParentPath $ContentRootPath -ItemName $SiteCollectionName -TemplateId $tenantTplId | Out-Null
+        Ensure-ContentItem -ParentPath "$ContentRootPath/$SiteCollectionName" -ItemName $SiteName -TemplateId $siteTplId | Out-Null
+        Ensure-ContentItem -ParentPath $SitePath -ItemName "Presentation" -TemplateId $presentationId | Out-Null
+        Ensure-ContentItem -ParentPath $PresentationPath -ItemName "Available Renderings" -TemplateId $arFolderTplId | Out-Null
+        $availableRenderingsItem = Ensure-ContentItem -ParentPath $AvailableRenderingsPath -ItemName $AvailableRenderingsItemName -TemplateId $arItemTplId
+
+        $availableRenderingsItem.Editing.BeginEdit() | Out-Null
+        $availableRenderingsItem["Renderings"] = ($renderingIds -join "|")
+        $availableRenderingsItem.Editing.EndEdit() | Out-Null
+        Write-Host "[+] Assigned $($renderingIds.Count) renderings to: $AvailableRenderingsPath/$AvailableRenderingsItemName" -ForegroundColor Green
 
     } # End BulkUpdateContext
 
@@ -927,6 +1013,7 @@ try {
     Write-Host "     Items     : 11 Datasource Item Templates" -ForegroundColor Green
     Write-Host "     Organisms : 19 Organism Component Templates" -ForegroundColor Green
     Write-Host "     Renderings: 19 Json Renderings -> $RenderingsPath" -ForegroundColor Green
+    Write-Host "     Available : $AvailableRenderingsPath/$AvailableRenderingsItemName" -ForegroundColor Green
     Write-Host "============================================================" -ForegroundColor Green
 }
 catch {
