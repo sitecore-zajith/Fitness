@@ -20,6 +20,9 @@
       3. Organisms/*        - 19 Organism component templates inheriting multi-field Base Templates
                               + component-specific __Standard Values and Insert Options
       4. Add-SitecoreAIField - Reusable helper to add new fields with Sitecore AI metadata
+      5. Renderings/*       - 19 Json Renderings under
+                              master:/sitecore/layout/Renderings/Project/Corporate/FitnessMaster
+                              mapped 1:1 to Organisms/* (componentName, Datasource Template/Location)
 .NOTES
     Target Environment : Sitecore XM Cloud / Sitecore XP with SPE (Execute in Sitecore ISE)
     Encoding           : ASCII-safe
@@ -46,6 +49,12 @@ $OrganismsPath      = "$TenantRootPath/Organisms"
 
 $DataRootQuery      = "query:./ancestor-or-self::*[@@templatename='Site']/Data"
 
+# Headless (XM Cloud / JSS) rendering system templates
+$JsonRenderingId    = "{04646A89-996F-4EE7-878A-FFDBF1F0EF0D}"
+$RenderingFolderId  = "{7EE0975B-0698-493E-B3A2-0B2EF33D0522}"
+$RenderingsRootPath = "master:/sitecore/layout/Renderings/Project/Corporate"
+$RenderingsPath     = "$RenderingsRootPath/$TenantName"
+
 # Minimum number of common fields required to qualify as a Base Template
 $MinBaseTemplateFields = 2
 
@@ -56,8 +65,13 @@ $MinBaseTemplateFields = 2
 function Ensure-TemplateFolder {
     param(
         [Parameter(Mandatory = $true)][string]$ParentPath,
-        [Parameter(Mandatory = $true)][string]$FolderName
+        [Parameter(Mandatory = $true)][string]$FolderName,
+        [Parameter(Mandatory = $false)][string]$FolderTemplateId
     )
+
+    if (-not $FolderTemplateId) {
+        $FolderTemplateId = $TemplateFolderId
+    }
 
     $fullPath = "$ParentPath/$FolderName"
     if (Test-Path -Path $fullPath) {
@@ -65,9 +79,46 @@ function Ensure-TemplateFolder {
         return Get-Item -Path $fullPath
     }
 
-    Write-Host "[+] Creating Template Folder: $fullPath" -ForegroundColor Cyan
-    $folder = New-Item -Path $ParentPath -Name $FolderName -ItemType $TemplateFolderId
+    Write-Host "[+] Creating Folder: $fullPath" -ForegroundColor Cyan
+    $folder = New-Item -Path $ParentPath -Name $FolderName -ItemType $FolderTemplateId
     return $folder
+}
+
+<#
+.SYNOPSIS
+    Creates or updates a headless Json Rendering and writes the supplied field values.
+.DESCRIPTION
+    Idempotent: re-running updates the existing rendering in place. Unknown field names
+    are skipped with a warning instead of failing the whole run.
+#>
+function Ensure-JsonRendering {
+    param(
+        [Parameter(Mandatory = $true)][string]$ParentPath,
+        [Parameter(Mandatory = $true)][string]$RenderingName,
+        [Parameter(Mandatory = $true)][hashtable]$Fields
+    )
+
+    $renderingPath = "$ParentPath/$RenderingName"
+    if (Test-Path -Path $renderingPath) {
+        $renderingItem = Get-Item -Path $renderingPath
+        Write-Host "[i] Updating Rendering: $renderingPath" -ForegroundColor Yellow
+    }
+    else {
+        $renderingItem = New-Item -Path $ParentPath -Name $RenderingName -ItemType $JsonRenderingId
+        Write-Host "[+] Created Rendering: $renderingPath" -ForegroundColor Green
+    }
+
+    $renderingItem.Editing.BeginEdit() | Out-Null
+    foreach ($kvp in $Fields.GetEnumerator()) {
+        if ($null -eq $renderingItem.Fields[$kvp.Key]) {
+            Write-Warning "[WARN] Field '$($kvp.Key)' not found on rendering '$RenderingName'. Skipped."
+            continue
+        }
+        $renderingItem[$kvp.Key] = $kvp.Value
+    }
+    $renderingItem.Editing.EndEdit() | Out-Null
+
+    return $renderingItem
 }
 
 function Ensure-TemplateSection {
@@ -766,6 +817,7 @@ try {
             }
         )
 
+        $organismTemplates = @{}
         foreach ($org in $organisms) {
             $resolvedBaseIds = @()
             foreach ($baseName in $org.Inherits) {
@@ -782,6 +834,7 @@ try {
                 -InsertOptionIds $org.InsertOptions
 
             $orgTplPath = "master:$($orgTpl.Paths.FullPath)"
+            $organismTemplates[$org.Name] = @{ Path = $orgTpl.Paths.FullPath; Icon = $org.Icon }
             $fieldOrder = 100
 
             foreach ($f in $org.Fields) {
@@ -824,6 +877,47 @@ try {
             -AIMaxLengthHint "40 characters" `
             -DefaultValue "Free 7-Day Nutrition Assessment" | Out-Null
 
+        # ====================================================================
+        # 8. CREATE JSON RENDERINGS (1:1 WITH ORGANISM TEMPLATES)
+        #    master:/sitecore/layout/Renderings/Project/Corporate/FitnessMaster
+        # ====================================================================
+        $renderingsProjectPath = Split-Path -Path $RenderingsRootPath -Parent
+        if (-not (Test-Path -Path $renderingsProjectPath)) {
+            Ensure-TemplateFolder -ParentPath (Split-Path -Path $renderingsProjectPath -Parent) -FolderName "Project" -FolderTemplateId $RenderingFolderId | Out-Null
+        }
+        Ensure-TemplateFolder -ParentPath $renderingsProjectPath -FolderName "Corporate" -FolderTemplateId $RenderingFolderId | Out-Null
+        Ensure-TemplateFolder -ParentPath $RenderingsRootPath -FolderName $TenantName -FolderTemplateId $RenderingFolderId | Out-Null
+
+        # Per-rendering overrides. Any key here replaces the default value below.
+        # Edit this table to change a rendering's fields; re-run to apply (idempotent).
+        $renderingOverrides = @{
+            Navbar = @{ "Datasource Location" = "$DataRootQuery/Global|$DataRootQuery" }
+            Footer = @{ "Datasource Location" = "$DataRootQuery/Global|$DataRootQuery" }
+        }
+
+        foreach ($org in $organisms) {
+            $tpl = $organismTemplates[$org.Name]
+
+            $renderingFields = @{
+                "componentName"               = $org.Name   # MUST match the Next.js component name (src/components/organisms/*.tsx)
+                "Datasource Template"         = $tpl.Path
+                "Datasource Location"         = "$DataRootQuery/$($org.Name)|$DataRootQuery"
+                "Parameters Template"         = ""
+                "Rendering Contents Resolver" = ""          # Empty = default Datasource Resolver (serializes Multilist children)
+                "Editable"                    = "1"
+                "Open Properties after Add"   = "0"
+                "__Icon"                      = $tpl.Icon
+            }
+
+            if ($renderingOverrides.ContainsKey($org.Name)) {
+                foreach ($kvp in $renderingOverrides[$org.Name].GetEnumerator()) {
+                    $renderingFields[$kvp.Key] = $kvp.Value
+                }
+            }
+
+            Ensure-JsonRendering -ParentPath $RenderingsPath -RenderingName $org.Name -Fields $renderingFields | Out-Null
+        }
+
     } # End BulkUpdateContext
 
     Write-Host "============================================================" -ForegroundColor Green
@@ -832,6 +926,7 @@ try {
     Write-Host "     Base      : 8 Multi-Field Base Templates (>= 2 fields each)" -ForegroundColor Green
     Write-Host "     Items     : 11 Datasource Item Templates" -ForegroundColor Green
     Write-Host "     Organisms : 19 Organism Component Templates" -ForegroundColor Green
+    Write-Host "     Renderings: 19 Json Renderings -> $RenderingsPath" -ForegroundColor Green
     Write-Host "============================================================" -ForegroundColor Green
 }
 catch {
