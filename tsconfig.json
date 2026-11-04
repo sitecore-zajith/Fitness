@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@sitecore-content-sdk/nextjs": ["./src/sitecore/lib/content-sdk-shim.tsx"]
     }
   },
   "include": [
