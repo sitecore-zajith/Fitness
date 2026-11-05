@@ -1,11 +1,15 @@
 import type { ComponentType } from "react";
 import * as AboutSnippet from "./components/AboutSnippet";
 import * as AppointmentForm from "./components/AppointmentForm";
+import * as CoachesSection from "./components/CoachesSection";
 import * as Footer from "./components/Footer";
+import * as HeroSection from "./components/HeroSection";
 import * as HomeHero from "./components/HomeHero";
 import * as Navbar from "./components/Navbar";
 import * as Procedure from "./components/Procedure";
+import * as QuoteBlock from "./components/QuoteBlock";
 import * as ServicesPreview from "./components/ServicesPreview";
+import * as StatsSection from "./components/StatsSection";
 import * as Testimonials from "./components/Testimonials";
 
 // Each module exports its own strongly typed `Default`; the map erases field types like the SDK map does.
@@ -26,5 +30,8 @@ export const componentMap = new Map<string, SitecoreComponentModule>([
   ["Testimonials", Testimonials],
   ["AppointmentForm", AppointmentForm],
   ["Footer", Footer],
+  ["HeroSection", HeroSection],
+  ["CoachesSection", CoachesSection],
+  ["StatsSection", StatsSection],
+  ["QuoteBlock", QuoteBlock],
 ]);
-
