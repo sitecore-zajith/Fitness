@@ -34,6 +34,26 @@ export interface ContactInfoFields {
   Email: Field<string>;
 }
 
+/** Base/_BaseBrandIdentity */
+export interface BrandIdentityFields {
+  BrandPrefix: Field<string>;
+  BrandSuffix: Field<string>;
+}
+
+/** Base/_BaseSocialLinks */
+export interface SocialLinksFields {
+  FacebookLink?: LinkField;
+  TwitterLink?: LinkField;
+  InstagramLink?: LinkField;
+  YoutubeLink?: LinkField;
+}
+
+/** DatasourceItems/NavigationLinkItem */
+export interface NavigationLinkItemFields {
+  LinkTitle: Field<string>;
+  TargetLink: LinkField;
+}
+
 /** DatasourceItems/ServiceItem (inherits _BaseContentBlock + _BaseMediaCta) */
 export interface ServiceItemFields extends Partial<MediaCtaFields> {
   Title: Field<string>;

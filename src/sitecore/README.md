@@ -7,12 +7,14 @@ Field-driven versions of the components rendered by [`src/app/page.tsx`](../app/
 ```
 src/sitecore/
 ├── components/                  <- copy this folder into the XM Cloud head app
+│   ├── Navbar.tsx               Organisms/Navbar           + NavigationLinkItem (Header)
 │   ├── HomeHero.tsx             Organisms/HomeHero
 │   ├── AboutSnippet.tsx         Organisms/AboutSnippet     + FeatureHighlightItem
 │   ├── ServicesPreview.tsx      Organisms/ServicesPreview  + ServiceItem
 │   ├── Procedure.tsx            Organisms/Procedure        + ProcedureStepItem
 │   ├── Testimonials.tsx         Organisms/Testimonials     + TestimonialItem
 │   ├── AppointmentForm.tsx      Organisms/AppointmentForm  + ServiceItem (Data/Services)
+│   ├── Footer.tsx               Organisms/Footer           + NavigationLinkItem (Footer)
 │   └── shared/                  SectionHeading, ServiceIcon, button styles, field types
 ├── component-map.ts             componentName -> module (keys = rendering componentName)
 ├── PlaceholderPreview.tsx       local stand-in for SDK <Placeholder />

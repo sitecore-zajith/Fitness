@@ -9,6 +9,18 @@ export const metadata: Metadata = {
 
 /** Renders the Sitecore-ready home components from mock Layout Service data. */
 export default function SitecoreHomePreview() {
-  return <PlaceholderPreview renderings={homeRouteMock.placeholders["headless-main"]} />;
+  return (
+    <>
+      <header>
+        <PlaceholderPreview renderings={homeRouteMock.placeholders["headless-header"]} />
+      </header>
+      <main className="flex-grow pt-20">
+        <PlaceholderPreview renderings={homeRouteMock.placeholders["headless-main"]} />
+      </main>
+      <footer>
+        <PlaceholderPreview renderings={homeRouteMock.placeholders["headless-footer"]} />
+      </footer>
+    </>
+  );
 }
 

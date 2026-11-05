@@ -31,6 +31,8 @@ export interface RichTextField {
   editable?: string;
 }
 
+export type MultiLineTextField = TextField;
+
 export interface ImageFieldValue {
   src?: string;
   alt?: string;

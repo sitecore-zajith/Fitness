@@ -1,7 +1,9 @@
 import type { ComponentRendering } from "@sitecore-content-sdk/nextjs";
 import type { AboutSnippetFields } from "../components/AboutSnippet";
 import type { AppointmentFormFields } from "../components/AppointmentForm";
+import type { FooterFields } from "../components/Footer";
 import type { HomeHeroFields } from "../components/HomeHero";
+import type { NavbarFields } from "../components/Navbar";
 import type { ProcedureFields } from "../components/Procedure";
 import type { ServicesPreviewFields } from "../components/ServicesPreview";
 import type { TestimonialsFields } from "../components/Testimonials";
@@ -9,8 +11,57 @@ import { image, item, link, rendering, text } from "./mock-helpers";
 
 /**
  * Mirrors the Layout Service response for /sitecore/content/Corporate/FitLife/Home
- * (route.placeholders["headless-main"]) with the content seeded by plan/Assign-HomePageRenderings.ps1.
+ * (route.placeholders["headless-header"], ["headless-main"], ["headless-footer"])
+ * with the content seeded by plan/Create-SitecoreAITemplates.ps1 and plan/Assign-HomePageRenderings.ps1.
  */
+
+const navbar: NavbarFields = {
+  BrandPrefix: text("FitLife"),
+  BrandSuffix: text("Coach"),
+  DesktopCtaLink: link("/#appointment", "Appointment"),
+  MobileCtaLink: link("/#appointment", "Make an Appointment"),
+  NavigationLinks: [
+    { name: "Home", href: "/" },
+    { name: "About", href: "/about" },
+    { name: "Services", href: "/services" },
+    { name: "Products", href: "/products" },
+    { name: "Gallery", href: "/gallery" },
+    { name: "Blog", href: "/blog" },
+    { name: "Contact", href: "/contact" },
+  ].map((l) => item(l.name, { LinkTitle: text(l.name), TargetLink: link(l.href, l.name) })),
+};
+
+const footer: FooterFields = {
+  BrandPrefix: text("FitLife"),
+  BrandSuffix: text("Coach"),
+  BrandSummary: text(
+    "Better Eat, Better Life. Empowering you to achieve your health and wellness goals through personalized coaching, nutrition, and support."
+  ),
+  FacebookLink: link("https://facebook.com", "Facebook"),
+  InstagramLink: link("https://instagram.com", "Instagram"),
+  TwitterLink: link("https://twitter.com", "Twitter"),
+  YoutubeLink: link("https://youtube.com", "YouTube"),
+  QuickLinksHeading: text("Quick Links"),
+  QuickLinks: [
+    { name: "Home", href: "/" },
+    { name: "About Us", href: "/about" },
+    { name: "Services", href: "/services" },
+    { name: "Gallery", href: "/gallery" },
+    { name: "Blog", href: "/blog" },
+  ].map((l) => item(l.name, { LinkTitle: text(l.name), TargetLink: link(l.href, l.name) })),
+  ServicesHeading: text("Our Services"),
+  ServiceLinks: [
+    { name: "Weight Loss Program", href: "/services" },
+    { name: "Sports Nutrition", href: "/services" },
+    { name: "Individual Coaching", href: "/services" },
+    { name: "Workout Routines", href: "/services" },
+  ].map((l) => item(l.name, { LinkTitle: text(l.name), TargetLink: link(l.href, l.name) })),
+  ContactHeading: text("Contact Us"),
+  Address: text("123 Fitness Avenue, Wellness City, NY 10001"),
+  Email: text("info@fitlifecoach.com"),
+  Phone: text("+1 (555) 123-4567"),
+  CopyrightText: text("FitLifeCoach. All rights reserved."),
+};
 
 const homeHero: HomeHeroFields = {
   Subtitle: text("Transform Your Life"),
@@ -139,6 +190,7 @@ const appointmentForm: AppointmentFormFields = {
 
 export const homeRouteMock: { placeholders: Record<string, ComponentRendering[]> } = {
   placeholders: {
+    "headless-header": [rendering("Navbar", navbar)],
     "headless-main": [
       rendering("HomeHero", homeHero),
       rendering("AboutSnippet", aboutSnippet),
@@ -147,6 +199,7 @@ export const homeRouteMock: { placeholders: Record<string, ComponentRendering[]>
       rendering("Testimonials", testimonials),
       rendering("AppointmentForm", appointmentForm),
     ],
+    "headless-footer": [rendering("Footer", footer)],
   },
 };
 
