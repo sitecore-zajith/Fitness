@@ -8,6 +8,7 @@ import * as HomeHero from "./components/HomeHero";
 import * as Navbar from "./components/Navbar";
 import * as Procedure from "./components/Procedure";
 import * as QuoteBlock from "./components/QuoteBlock";
+import * as ServicesGrid from "./components/ServicesGrid";
 import * as ServicesPreview from "./components/ServicesPreview";
 import * as StatsSection from "./components/StatsSection";
 import * as Testimonials from "./components/Testimonials";
@@ -34,4 +35,5 @@ export const componentMap = new Map<string, SitecoreComponentModule>([
   ["CoachesSection", CoachesSection],
   ["StatsSection", StatsSection],
   ["QuoteBlock", QuoteBlock],
+  ["ServicesGrid", ServicesGrid],
 ]);
