@@ -106,10 +106,27 @@ Revamp the fitness, coaching, and nutrition blog details page (`/blog/[id]`) int
 
 ---
 
+## Phase 3: Revamped Filter Suite (Title, Description, Level, Author, Category)
+
+- [x] **Task 8: Refactor Filters by Title, Description, Level, Author, and Category**
+  - Added `level` ("Beginner" | "Intermediate" | "Advanced" | "All Levels") across all articles in `src/data/blogData.ts`.
+  - Removed hashtags completely from the filter bar and blog cards per user request.
+  - Replaced hashtag chips on `BlogCard` with color-coded training `level` badges.
+  - Built multi-criteria filtering panel:
+    - Search input targeting Title & Description with clear button.
+    - Category dropdown filter.
+    - Training Experience Level dropdown filter.
+    - Coach/Author dropdown filter.
+    - Active filter chip indicators with individual dismiss buttons and a "Reset All Filters" button.
+  - Preserved smooth infinite scrolling without pagination.
+
+---
+
 ## Done When
 - [x] Every article from the blog listing (`/blog/1` through `/blog/12`) has its own rich, dedicated fitness/nutrition/coaching content.
 - [x] The blog details layout matches enterprise publication standards with clean typography, key takeaways, coach callout cards, and sticky navigation.
 - [x] Comments & discussion forms removed for pure distraction-free reading.
-- [x] Filtering (search, category, hashtags) and infinite scroll work seamlessly with zero pagination.
+- [x] Filters revamped to Title, Description, Level, Author, and Category with hashtags removed.
+- [x] Infinite scroll works seamlessly with zero pagination.
 - [x] Zero build or lint errors (`npm run build` exits 0).
 

@@ -40,6 +40,8 @@ export interface BlogPostComment {
   replies?: BlogPostComment[];
 }
 
+export type FitnessLevel = "Beginner" | "Intermediate" | "Advanced" | "All Levels";
+
 export interface BlogPost {
   id: string;
   slug: string;
@@ -47,6 +49,7 @@ export interface BlogPost {
   subtitle: string;
   excerpt: string;
   category: string;
+  level: FitnessLevel;
   readTime: string;
   publishedDate: string;
   updatedDate?: string;
@@ -100,6 +103,7 @@ export const blogPosts: BlogPost[] = [
     subtitle: "A clinical and physiological guide to dialing in your protein intake for hypertrophy, fat loss, and metabolic longevity.",
     excerpt: "Discover the science behind daily protein intake and how to calculate the optimal amount for your muscle-building and recovery goals.",
     category: "Nutrition & Diet",
+    level: "All Levels",
     readTime: "6 min read",
     publishedDate: "January 13, 2026",
     updatedDate: "Updated 3 days ago",
@@ -237,6 +241,7 @@ export const blogPosts: BlogPost[] = [
     subtitle: "Navigating energy systems, mitochondrial biogenesis, and fat oxidation for sustainable metabolic conditioning.",
     excerpt: "From HIIT to steady-state cardio, we break down the most effective exercises to help you burn fat and retain muscle mass.",
     category: "Cardio & Conditioning",
+    level: "Beginner",
     readTime: "7 min read",
     publishedDate: "January 12, 2026",
     coverImage: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1400&auto=format&fit=crop",
@@ -331,6 +336,7 @@ export const blogPosts: BlogPost[] = [
     subtitle: "Harnessing plant polyphenols, cellular hydration, and gut microbiome diversity to accelerate athletic regeneration.",
     excerpt: "Learn how increasing your daily vegetable intake can boost your energy levels, improve digestion, and accelerate recovery.",
     category: "Nutrition & Diet",
+    level: "All Levels",
     readTime: "5 min read",
     publishedDate: "January 10, 2026",
     coverImage: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1400&auto=format&fit=crop",
@@ -408,6 +414,7 @@ export const blogPosts: BlogPost[] = [
     subtitle: "Why the biological magic happens outside the gym and how to structure intelligent active recovery.",
     excerpt: "Overtraining can hinder your progress. Find out why rest days are crucial for muscle repair, hormonal balance, and injury prevention.",
     category: "Coaching & Recovery",
+    level: "Intermediate",
     readTime: "6 min read",
     publishedDate: "January 08, 2026",
     coverImage: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=1400&auto=format&fit=crop",
@@ -487,6 +494,7 @@ export const blogPosts: BlogPost[] = [
     subtitle: "Stop guessing your caloric surplus: a structured engineering approach to clean lean hypertrophy.",
     excerpt: "Stop guessing your macros. Here's a comprehensive guide to eating for lean muscle growth without gaining excess adipose fat.",
     category: "Strength Training",
+    level: "Intermediate",
     readTime: "8 min read",
     publishedDate: "January 06, 2026",
     coverImage: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=1400&auto=format&fit=crop",
@@ -568,6 +576,7 @@ export const blogPosts: BlogPost[] = [
     subtitle: "Unlock restricted hip capsules, open thoracic extension, and build bulletproof longevity for heavy compound lifting.",
     excerpt: "Incorporate these essential yoga poses and mobility drills into your post-workout routine to improve flexibility and reduce muscle soreness.",
     category: "Yoga & Flexibility",
+    level: "All Levels",
     readTime: "7 min read",
     publishedDate: "January 04, 2026",
     coverImage: "https://images.unsplash.com/photo-1552196563-55259259f635?q=80&w=1400&auto=format&fit=crop",
@@ -646,6 +655,7 @@ export const blogPosts: BlogPost[] = [
     subtitle: "High-protein, macro-balanced, 20-minute dinners that satisfy cravings and support body recomposition.",
     excerpt: "Short on time? Try these quick, delicious, and macro-friendly dinner recipes to keep your nutrition and performance on track.",
     category: "Healthy Recipes",
+    level: "Beginner",
     readTime: "5 min read",
     publishedDate: "January 02, 2026",
     coverImage: "https://images.unsplash.com/photo-149883716733f-a51b1f15728c?q=80&w=1400&auto=format&fit=crop",
@@ -726,6 +736,7 @@ export const blogPosts: BlogPost[] = [
     subtitle: "Can you maintain dense contractile tissue while utilizing a 16:8 time-restricted feeding protocol?",
     excerpt: "We analyze the metabolic effects of intermittent fasting on growth hormone, insulin sensitivity, and lean mass preservation.",
     category: "Nutrition & Diet",
+    level: "Advanced",
     readTime: "6 min read",
     publishedDate: "December 28, 2025",
     coverImage: "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=1400&auto=format&fit=crop",
@@ -777,6 +788,7 @@ export const blogPosts: BlogPost[] = [
     subtitle: "Eliminate patellar tendonitis and build joint resilience with targeted deceleration mechanics.",
     excerpt: "Strengthen the forgotten shock-absorbers of the lower extremity to protect your knees under heavy squat and jump loads.",
     category: "Strength Training",
+    level: "Intermediate",
     readTime: "7 min read",
     publishedDate: "December 22, 2025",
     coverImage: "https://images.unsplash.com/photo-1434608519344-49d77a699e1d?q=80&w=1400&auto=format&fit=crop",
@@ -828,6 +840,7 @@ export const blogPosts: BlogPost[] = [
     subtitle: "Why training slower will make you faster, leaner, and dramatically more metabolically flexible.",
     excerpt: "Discover why elite endurance athletes spend 80% of their training volume in Zone 2 and how to calculate your personalized pace.",
     category: "Cardio & Conditioning",
+    level: "Beginner",
     readTime: "6 min read",
     publishedDate: "December 15, 2025",
     coverImage: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=1400&auto=format&fit=crop",
@@ -878,6 +891,7 @@ export const blogPosts: BlogPost[] = [
     subtitle: "The neurochemical cascade of slow-wave sleep and its critical impact on anabolic hormone release.",
     excerpt: "Understand how stage 3/4 deep sleep coordinates natural growth hormone release and how to optimize your nightly sleep hygiene.",
     category: "Coaching & Recovery",
+    level: "Intermediate",
     readTime: "7 min read",
     publishedDate: "December 08, 2025",
     coverImage: "https://images.unsplash.com/photo-1511295742362-92c96b124e52?q=80&w=1400&auto=format&fit=crop",
@@ -930,6 +944,7 @@ export const blogPosts: BlogPost[] = [
     subtitle: "Wake up your central nervous system, hydrate intervertebral discs, and eliminate lower back morning stiffness.",
     excerpt: "A simple morning mobility sequence designed to decompress discs and activate stabilizing core musculature before your day begins.",
     category: "Yoga & Flexibility",
+    level: "Beginner",
     readTime: "5 min read",
     publishedDate: "December 01, 2025",
     coverImage: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=1400&auto=format&fit=crop",
@@ -972,7 +987,16 @@ export const blogPosts: BlogPost[] = [
 
 export function getAllCategories(): string[] {
   const cats = new Set(blogPosts.map((p) => p.category));
-  return ["All", ...Array.from(cats)];
+  return ["All Categories", ...Array.from(cats)];
+}
+
+export function getAllAuthors(): string[] {
+  const authorSet = new Set(blogPosts.map((p) => p.author.name));
+  return ["All Authors", ...Array.from(authorSet)];
+}
+
+export function getAllLevels(): FitnessLevel[] {
+  return ["All Levels", "Beginner", "Intermediate", "Advanced"];
 }
 
 export function getAllTags(): string[] {

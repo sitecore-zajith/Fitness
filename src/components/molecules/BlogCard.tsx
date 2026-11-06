@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FaUser, FaClock, FaArrowRight } from "react-icons/fa";
+import { FaUser, FaClock, FaArrowRight, FaLayerGroup } from "react-icons/fa";
 
 export interface BlogCardProps {
   id: number | string;
@@ -13,9 +13,8 @@ export interface BlogCardProps {
   image: string;
   index: number;
   category?: string;
+  level?: string;
   readTime?: string;
-  tags?: string[];
-  onTagClick?: (tag: string) => void;
 }
 
 export default function BlogCard({ 
@@ -25,14 +24,26 @@ export default function BlogCard({
   date, 
   month, 
   author, 
-  comments, 
   image, 
   index,
   category,
-  readTime,
-  tags,
-  onTagClick
+  level,
+  readTime
 }: BlogCardProps) {
+  // Level badge styling (strictly complying with color guidelines)
+  const getLevelBadge = (lvl?: string) => {
+    switch (lvl) {
+      case "Beginner":
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      case "Intermediate":
+        return "bg-sky-50 text-sky-700 border-sky-200";
+      case "Advanced":
+        return "bg-rose-50 text-rose-700 border-rose-200";
+      default:
+        return "bg-neutral-100 text-neutral-700 border-neutral-200";
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 25 }}
@@ -50,7 +61,7 @@ export default function BlogCard({
         
         {/* Category Pill */}
         {category && (
-          <span className="absolute top-4 left-4 bg-neutral-900/80 backdrop-blur-xs text-white text-[11px] font-semibold tracking-wider uppercase px-3 py-1 rounded-full shadow-xs">
+          <span className="absolute top-4 left-4 bg-neutral-900/85 backdrop-blur-xs text-white text-[11px] font-semibold tracking-wider uppercase px-3 py-1 rounded-full shadow-xs">
             {category}
           </span>
         )}
@@ -80,31 +91,20 @@ export default function BlogCard({
           <Link href={`/blog/${id}`}>{title}</Link>
         </h3>
 
-        {/* Excerpt */}
+        {/* Excerpt / Description */}
         <p className="text-neutral-600 text-sm leading-relaxed mb-4 flex-grow line-clamp-3">
           {excerpt}
         </p>
 
-        {/* Hashtags and Read Link */}
+        {/* Level Tag & Read More Link */}
         <div className="pt-4 border-t border-neutral-100 flex items-center justify-between gap-2 mt-auto">
-          {tags && tags.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5 overflow-hidden max-h-7">
-              {tags.slice(0, 2).map((tag, tIdx) => (
-                <button
-                  key={tIdx}
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (onTagClick) onTagClick(tag);
-                  }}
-                  className="text-[10px] font-medium text-neutral-500 bg-neutral-100 hover:bg-primary/10 hover:text-primary px-2 py-0.5 rounded-md transition-colors"
-                >
-                  #{tag}
-                </button>
-              ))}
-            </div>
-          ) : <div />}
+          {level ? (
+            <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-md border uppercase tracking-wider flex items-center gap-1 ${getLevelBadge(level)}`}>
+              <FaLayerGroup className="text-[9px]" /> {level}
+            </span>
+          ) : (
+            <div />
+          )}
 
           <Link 
             href={`/blog/${id}`} 
