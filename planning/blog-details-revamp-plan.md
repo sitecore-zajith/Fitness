@@ -86,9 +86,30 @@ Revamp the fitness, coaching, and nutrition blog details page (`/blog/[id]`) int
 
 ---
 
+## Phase 2: Filters, Infinite Scroll & Details Simplification
+
+- [x] **Task 5: Multi-Level Filtering Suite on Blog Page (`src/app/blog/page.tsx`)**
+  - Integrated real-time Search filter (matching title, excerpt, category, author, hashtags) with instant clear (×).
+  - Integrated Category filter pills with active counters for each topic.
+  - Integrated Hashtag-level chips with active toggle filtering.
+  - Added filter summary counter ("Showing X of Y articles") and "Reset All Filters" button.
+  - Added zero-results empty state with reset button.
+
+- [x] **Task 6: Infinite Scroll Loading (No Pagination)**
+  - Removed `<Pagination />` completely.
+  - Implemented `IntersectionObserver` observing sentinel target at the bottom of the grid.
+  - Incremental batch loading with animated spinner and "All articles loaded" completion notice.
+
+- [x] **Task 7: Streamline Blog Details Page (`src/app/blog/[id]/page.tsx`)**
+  - Removed discussion section, comment list, and leave comment forms per request.
+  - Maintained pure, high-readability enterprise editorial layout (executive summary, coach callout tips, author bio, sticky Table of Contents, related reads).
+
+---
+
 ## Done When
-- [x] Every article from the blog listing (`/blog/1` through `/blog/7`) has its own rich, dedicated fitness/nutrition/coaching content.
+- [x] Every article from the blog listing (`/blog/1` through `/blog/12`) has its own rich, dedicated fitness/nutrition/coaching content.
 - [x] The blog details layout matches enterprise publication standards with clean typography, key takeaways, coach callout cards, and sticky navigation.
-- [x] Comments and likes are interactive and persistent via `localStorage`.
+- [x] Comments & discussion forms removed for pure distraction-free reading.
+- [x] Filtering (search, category, hashtags) and infinite scroll work seamlessly with zero pagination.
 - [x] Zero build or lint errors (`npm run build` exits 0).
 

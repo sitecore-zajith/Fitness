@@ -718,8 +718,268 @@ export const blogPosts: BlogPost[] = [
         likes: 15
       }
     ]
+  },
+  {
+    id: "8",
+    slug: "intermittent-fasting-for-muscle-retention",
+    title: "Intermittent Fasting & Muscle Retention: Evidence vs. Hype",
+    subtitle: "Can you maintain dense contractile tissue while utilizing a 16:8 time-restricted feeding protocol?",
+    excerpt: "We analyze the metabolic effects of intermittent fasting on growth hormone, insulin sensitivity, and lean mass preservation.",
+    category: "Nutrition & Diet",
+    readTime: "6 min read",
+    publishedDate: "December 28, 2025",
+    coverImage: "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=1400&auto=format&fit=crop",
+    imageCaption: "Strategic meal timing: Concentrating nutrient-dense whole foods into an anabolic feeding window.",
+    author: authors.elena,
+    keyTakeaways: [
+      "Intermittent fasting does not inherently burn more fat than standard caloric restriction; it functions primarily as an adherence tool.",
+      "To preserve muscle during a 16:8 fast, ensure you hit at least 1.8–2.0g/kg of protein within your 8-hour feeding window.",
+      "Fasting stimulates cellular autophagy and stabilizes morning insulin sensitivity.",
+      "Break your fast with easy-to-digest protein and moderate carbs rather than an overwhelming heavy meal."
+    ],
+    tableOfContents: [
+      { id: "fasting-physiology", title: "1. The Physiology of Time-Restricted Eating" },
+      { id: "anabolic-threshold", title: "2. The Anabolic Threshold Within 8 Hours" },
+      { id: "breaking-the-fast", title: "3. How to Break Your Fast Effectively" }
+    ],
+    sections: [
+      {
+        id: "fasting-physiology",
+        heading: "1. The Physiology of Time-Restricted Eating",
+        paragraphs: [
+          "Time-restricted feeding (commonly 16 hours of fasting with an 8-hour feeding window) has gained widespread popularity in executive wellness circles. During fasting, liver glycogen depletes, leading to increased fatty acid oxidation and ketones.",
+          "However, claims that fasting magically bypasses thermodynamics are incorrect. Fasting is a structured behavioural tool that curbs nighttime snacking and improves insulin dynamics."
+        ]
+      },
+      {
+        id: "anabolic-threshold",
+        heading: "2. The Anabolic Threshold Within 8 Hours",
+        paragraphs: [
+          "The main concern for strength athletes is Muscle Protein Synthesis. Packing all your daily protein into two 4-hour separated meals can still stimulate mTOR twice if each dose reaches 40g+ with adequate leucine."
+        ]
+      },
+      {
+        id: "breaking-the-fast",
+        heading: "3. How to Break Your Fast Effectively",
+        paragraphs: [
+          "Avoid rushing into high-fat greasy foods when the window opens. Start with a bioavailable protein shake or egg white frittata with berries to gently activate digestive enzymes."
+        ]
+      }
+    ],
+    tags: ["Fasting", "Autophagy", "Nutrition", "Fat Loss", "Metabolism"],
+    relatedPostIds: ["1", "3", "7"],
+    initialComments: []
+  },
+  {
+    id: "9",
+    slug: "building-bulletproof-knees-vmo-and-tibialis",
+    title: "Building Bulletproof Knees: VMO Strength & Tibialis Training",
+    subtitle: "Eliminate patellar tendonitis and build joint resilience with targeted deceleration mechanics.",
+    excerpt: "Strengthen the forgotten shock-absorbers of the lower extremity to protect your knees under heavy squat and jump loads.",
+    category: "Strength Training",
+    readTime: "7 min read",
+    publishedDate: "December 22, 2025",
+    coverImage: "https://images.unsplash.com/photo-1434608519344-49d77a699e1d?q=80&w=1400&auto=format&fit=crop",
+    imageCaption: "Strengthening deceleration angles: Deep knee-over-toe split squats and wall tibialis raises.",
+    author: authors.marcus,
+    keyTakeaways: [
+      "Knee pain often stems from weaknesses upstream (glute medius) or downstream (ankle dorsiflexion and tibialis anterior).",
+      "Training knees past your toes in a controlled, progressive fashion strengthens the patellar tendon over time.",
+      "The tibialis anterior absorbs up to 3x body weight during jumping and running; train it directly with loaded dorsiflexion.",
+      "Incorporate backwards sled dragging 2–3 times per week to pump synovial fluid into the knee capsule without spinal load."
+    ],
+    tableOfContents: [
+      { id: "root-causes-knee-pain", title: "1. The Biomechanics of Knee Pain" },
+      { id: "tibialis-power", title: "2. The First Line of Defense: The Tibialis" },
+      { id: "atg-split-squat", title: "3. The ATG Split Squat Progression" }
+    ],
+    sections: [
+      {
+        id: "root-causes-knee-pain",
+        heading: "1. The Biomechanics of Knee Pain",
+        paragraphs: [
+          "The knee is a hinge joint trapped between the hip and the foot. When either of those adjacent joints lacks mobility or motor control, compensatory rotational force shears directly through the meniscus and patellar tendon.",
+          "Rest alone does not heal chronic patellar tendonitis. Tendons require progressive mechanical load to remodel collagen fibers."
+        ]
+      },
+      {
+        id: "tibialis-power",
+        heading: "2. The First Line of Defense: The Tibialis",
+        paragraphs: [
+          "While calf training is ubiquitous, the opposing muscle on the front of the shin—the tibialis anterior—is routinely ignored. Performing 20–25 slow tibialis raises against a wall or using a tib bar builds an indispensable shock absorber for sprinting and jumping."
+        ]
+      },
+      {
+        id: "atg-split-squat",
+        heading: "3. The ATG Split Squat Progression",
+        paragraphs: [
+          "Progressing the front-foot elevated split squat allows the knee to travel safely over the toe, gently loading the quadriceps tendon and lengthening the back hip flexor. Start on an elevated 12-inch step before progressing to flat ground."
+        ]
+      }
+    ],
+    tags: ["Knee Health", "Mobility", "Hypertrophy", "Biomechanics", "Injury Prevention"],
+    relatedPostIds: ["6", "4", "2"],
+    initialComments: []
+  },
+  {
+    id: "10",
+    slug: "mastering-zone-2-cardio-mitochondrial-engine",
+    title: "Mastering Zone 2 Cardio: The Mitochondrial Engine",
+    subtitle: "Why training slower will make you faster, leaner, and dramatically more metabolically flexible.",
+    excerpt: "Discover why elite endurance athletes spend 80% of their training volume in Zone 2 and how to calculate your personalized pace.",
+    category: "Cardio & Conditioning",
+    readTime: "6 min read",
+    publishedDate: "December 15, 2025",
+    coverImage: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=1400&auto=format&fit=crop",
+    imageCaption: "Steady aerobic pace: Building dense capillary beds and mitochondrial efficiency.",
+    author: authors.sarah,
+    keyTakeaways: [
+      "Zone 2 training stimulates mitochondrial biogenesis, increasing the cellular engines that oxidize fat for fuel.",
+      "The easiest field test is the 'talk test': you should be able to speak in complete sentences with noticeable breathing effort.",
+      "Accumulating 150–180 minutes of Zone 2 weekly slashes all-cause mortality and accelerates post-lift lactate clearance.",
+      "Perform on low-impact equipment like the Concept2 rower, skierg, or stationary air bike to preserve joints."
+    ],
+    tableOfContents: [
+      { id: "what-is-zone-2", title: "1. What Exactly is Zone 2?" },
+      { id: "mitochondrial-benefits", title: "2. Mitochondrial Biogenesis & Fat Clearance" },
+      { id: "how-to-program-it", title: "3. Programming Zone 2 Into a Strength Routine" }
+    ],
+    sections: [
+      {
+        id: "what-is-zone-2",
+        heading: "1. What Exactly is Zone 2?",
+        paragraphs: [
+          "Zone 2 represents the exercise intensity where your blood lactate levels remain steady around 1.5 to 2.0 mmol/L. At this effort, Type I slow-twitch muscle fibers handle the entire workload, using oxygen to clear lactate almost as quickly as it is produced."
+        ]
+      },
+      {
+        id: "mitochondrial-benefits",
+        heading: "2. Mitochondrial Biogenesis & Fat Clearance",
+        paragraphs: [
+          "Unlike high-intensity training which produces quick lactate spikes and rapid glycogen exhaustion, Zone 2 creates long-term structural changes: increased capillary density, improved stroke volume in the heart, and greater cellular endurance."
+        ]
+      },
+      {
+        id: "how-to-program-it",
+        heading: "3. Programming Zone 2 Into a Strength Routine",
+        paragraphs: [
+          "A simple routine is 3 sessions per week of 45 minutes on an incline treadmill (12% grade, 3.2 mph) or stationary cycle at 65% max heart rate. It will not impede your squat or deadlift progress."
+        ]
+      }
+    ],
+    tags: ["Cardio", "Zone 2", "Endurance", "Mitochondria", "Recovery"],
+    relatedPostIds: ["2", "4", "1"],
+    initialComments: []
+  },
+  {
+    id: "11",
+    slug: "sleep-architecture-for-athletes-rem-vs-deep-sleep",
+    title: "Sleep Architecture for Athletes: REM vs. Deep Sleep",
+    subtitle: "The neurochemical cascade of slow-wave sleep and its critical impact on anabolic hormone release.",
+    excerpt: "Understand how stage 3/4 deep sleep coordinates natural growth hormone release and how to optimize your nightly sleep hygiene.",
+    category: "Coaching & Recovery",
+    readTime: "7 min read",
+    publishedDate: "December 08, 2025",
+    coverImage: "https://images.unsplash.com/photo-1511295742362-92c96b124e52?q=80&w=1400&auto=format&fit=crop",
+    imageCaption: "Restorative sleep environment: Complete darkness, cool temperature, and absence of blue spectrum lighting.",
+    author: authors.marcus,
+    keyTakeaways: [
+      "Over 75% of your daily pulsatile Human Growth Hormone (HGH) is released during slow-wave stage 3 deep sleep.",
+      "REM sleep is essential for motor pattern consolidation—locking in the neuromuscular memory of complex lifts.",
+      "Consuming alcohol or heavy meals within 2 hours of bedtime severely suppresses REM architecture and elevates resting heart rate.",
+      "Keep the bedroom temperature between 65–68°F (18–20°C) to facilitate the core body temperature drop required for deep sleep."
+    ],
+    tableOfContents: [
+      { id: "stages-of-sleep", title: "1. The Two Pillars: Slow-Wave vs. REM" },
+      { id: "hormonal-consequences", title: "2. Hormonal Consequences of Sleep Debt" },
+      { id: "evening-downregulation", title: "3. The 3-Step Evening Downregulation Protocol" }
+    ],
+    sections: [
+      {
+        id: "stages-of-sleep",
+        heading: "1. The Two Pillars: Slow-Wave vs. REM",
+        paragraphs: [
+          "Sleep is not a passive flatline; it is a dynamic 90-minute cycling of neurological states. Slow-wave sleep (Deep Sleep) is physical repair time: cellular repair, immune cytokine release, and bone remodeling. REM sleep is cognitive repair: mental resilience, reaction time, and emotional regulation."
+        ]
+      },
+      {
+        id: "hormonal-consequences",
+        heading: "2. Hormonal Consequences of Sleep Debt",
+        paragraphs: [
+          "Sleeping fewer than 6 hours per night for just one week lowers daytime testosterone by 10% to 15%, equivalent to 10–15 years of biological aging. It also blunts leptin (satiety hormone) and elevates ghrelin (hunger hormone), leading to carbohydrate cravings."
+        ]
+      },
+      {
+        id: "evening-downregulation",
+        heading: "3. The 3-Step Evening Downregulation Protocol",
+        paragraphs: [
+          "1. 10-3-2-1 Rule: No caffeine 10 hours before bed, no food 3 hours before, no fluids 2 hours before, and no bright screens 1 hour before.",
+          "2. Hot Shower or Sauna 60 minutes before bed: Dilates peripheral blood vessels, causing a rebound drop in core internal temperature that triggers sleepiness.",
+          "3. Complete Darkness: Blackout curtains and an eye mask ensure zero retinal stimulation that would disrupt melatonin release."
+        ]
+      }
+    ],
+    tags: ["Sleep", "Recovery", "CNS Fatigue", "Hormones", "Coaching"],
+    relatedPostIds: ["4", "1", "6"],
+    initialComments: []
+  },
+  {
+    id: "12",
+    slug: "10-minute-morning-spine-decompression-routine",
+    title: "The 10-Minute Morning Spine Decompression Routine",
+    subtitle: "Wake up your central nervous system, hydrate intervertebral discs, and eliminate lower back morning stiffness.",
+    excerpt: "A simple morning mobility sequence designed to decompress discs and activate stabilizing core musculature before your day begins.",
+    category: "Yoga & Flexibility",
+    readTime: "5 min read",
+    publishedDate: "December 01, 2025",
+    coverImage: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=1400&auto=format&fit=crop",
+    imageCaption: "Gentle spinal articulation: Cat-cow transitions and bird-dog core stabilization.",
+    author: authors.maya,
+    keyTakeaways: [
+      "During sleep, intervertebral discs absorb fluid and swell; avoid aggressive forward spinal flexion in the first 30 minutes upon waking.",
+      "The McGill Big 3 (Bird-Dog, Side Plank, Modified Curl-Up) provides maximum spinal stabilization with minimal compressive load.",
+      "Cat-Cow cycles gently mobilize the thoracic spine without straining the lumbar region.",
+      "Hydrate with 500ml of mineralized water immediately upon rising to assist connective tissue hydration."
+    ],
+    tableOfContents: [
+      { id: "morning-disc-hydrodynamics", title: "1. The Hydrodynamics of Your Discs" },
+      { id: "the-routine", title: "2. The 4-Move Morning Sequence" }
+    ],
+    sections: [
+      {
+        id: "morning-disc-hydrodynamics",
+        heading: "1. The Hydrodynamics of Your Discs",
+        paragraphs: [
+          "When you lie horizontal overnight, osmotic pressure pulls fluid into your spinal discs. When you stand up in the morning, the discs are at their fullest and stiffest. Bending forward immediately to touch your toes places extra hydrostatic stress on the annular fibers."
+        ]
+      },
+      {
+        id: "the-routine",
+        heading: "2. The 4-Move Morning Sequence",
+        paragraphs: [
+          "Move 1: Cat-Cow (8 slow breaths, focusing on moving segment by segment through the mid-back).",
+          "Move 2: Bird-Dog (5 reps per side with a 3-second hold, keeping the hips completely level).",
+          "Move 3: Prone Cobra (10 reps holding for 2 seconds to activate the thoracic extensors and lower traps).",
+          "Move 4: World's Greatest Stretch (3 reps per side opening up hip flexors, adductors, and thoracic rotation)."
+        ]
+      }
+    ],
+    tags: ["Yoga", "Mobility", "Spine Health", "Morning Routine", "Flexibility"],
+    relatedPostIds: ["6", "4", "9"],
+    initialComments: []
   }
 ];
+
+export function getAllCategories(): string[] {
+  const cats = new Set(blogPosts.map((p) => p.category));
+  return ["All", ...Array.from(cats)];
+}
+
+export function getAllTags(): string[] {
+  const tagSet = new Set<string>();
+  blogPosts.forEach((p) => p.tags.forEach((t) => tagSet.add(t)));
+  return Array.from(tagSet);
+}
 
 export function getBlogPost(id: string): BlogPost {
   const post = blogPosts.find((p) => p.id === id || p.slug === id);

@@ -13,16 +13,13 @@ import {
   FaCheck, 
   FaQuoteLeft, 
   FaLightbulb, 
-  FaComments, 
   FaArrowRight, 
-  FaThumbsUp, 
-  FaRegThumbsUp, 
   FaCheckCircle,
   FaArrowLeft,
   FaCalendarAlt,
   FaUserGraduate
 } from "react-icons/fa";
-import { getBlogPost, getRelatedPosts, BlogPost, BlogPostComment } from "@/data/blogData";
+import { getBlogPost, getRelatedPosts, BlogPost } from "@/data/blogData";
 
 interface PageProps {
   params: Promise<{ id: string }> | { id: string };
@@ -46,27 +43,8 @@ export default function BlogDetailPage({ params }: PageProps) {
   const [activeSection, setActiveSection] = useState<string>("");
   const [readingProgress, setReadingProgress] = useState<number>(0);
 
-  // Comments state with LocalStorage persistence
-  const [comments, setComments] = useState<BlogPostComment[]>(post.initialComments);
-  const [commentForm, setCommentForm] = useState({ name: "", email: "", text: "" });
-  const [commentSuccess, setCommentSuccess] = useState<boolean>(false);
-  const [replyingToId, setReplyingToId] = useState<string | null>(null);
-  const [replyText, setReplyText] = useState<string>("");
-
-  // Load persisted comments and likes from localStorage
+  // Load persisted likes and bookmarks from localStorage
   useEffect(() => {
-    const storageKey = `fitness_blog_comments_${post.id}`;
-    const savedComments = localStorage.getItem(storageKey);
-    if (savedComments) {
-      try {
-        setComments(JSON.parse(savedComments));
-      } catch (e) {
-        console.error("Error parsing saved comments", e);
-      }
-    } else {
-      setComments(post.initialComments);
-    }
-
     const likeKey = `fitness_blog_liked_${post.id}`;
     if (localStorage.getItem(likeKey) === "true") {
       setIsLiked(true);
@@ -77,9 +55,9 @@ export default function BlogDetailPage({ params }: PageProps) {
     if (localStorage.getItem(bookmarkKey) === "true") {
       setIsBookmarked(true);
     }
-  }, [post.id, post.initialComments]);
+  }, [post.id]);
 
-  // Track reading progress and active section in TOC
+  // Track reading progress and active section in Table of Contents
   useEffect(() => {
     const handleScroll = () => {
       const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -140,78 +118,6 @@ export default function BlogDetailPage({ params }: PageProps) {
       setCopiedToast(true);
       setTimeout(() => setCopiedToast(false), 3000);
     }
-  };
-
-  // Handle New Comment Submission
-  const handleCommentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!commentForm.name.trim() || !commentForm.text.trim()) return;
-
-    const newComment: BlogPostComment = {
-      id: `comment-${Date.now()}`,
-      author: commentForm.name.trim(),
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(commentForm.name)}&background=f97316&color=fff`,
-      role: "Verified Member",
-      date: "Just now",
-      content: commentForm.text.trim(),
-      likes: 0,
-      replies: []
-    };
-
-    const updated = [newComment, ...comments];
-    setComments(updated);
-    localStorage.setItem(`fitness_blog_comments_${post.id}`, JSON.stringify(updated));
-    setCommentForm({ name: "", email: "", text: "" });
-    setCommentSuccess(true);
-    setTimeout(() => setCommentSuccess(false), 4000);
-  };
-
-  // Handle Reply to an existing comment
-  const handleReplySubmit = (parentCommentId: string) => {
-    if (!replyText.trim()) return;
-
-    const reply: BlogPostComment = {
-      id: `reply-${Date.now()}`,
-      author: "You",
-      avatar: "https://ui-avatars.com/api/?name=You&background=171717&color=fff",
-      role: "Community Member",
-      date: "Just now",
-      content: replyText.trim(),
-      likes: 0
-    };
-
-    const updated = comments.map((c) => {
-      if (c.id === parentCommentId) {
-        return {
-          ...c,
-          replies: [...(c.replies || []), reply]
-        };
-      }
-      return c;
-    });
-
-    setComments(updated);
-    localStorage.setItem(`fitness_blog_comments_${post.id}`, JSON.stringify(updated));
-    setReplyText("");
-    setReplyingToId(null);
-  };
-
-  // Handle Like on Comment
-  const handleLikeComment = (commentId: string) => {
-    const updated = comments.map((c) => {
-      if (c.id === commentId) {
-        return { ...c, likes: c.likes + 1 };
-      }
-      if (c.replies) {
-        return {
-          ...c,
-          replies: c.replies.map((r) => r.id === commentId ? { ...r, likes: r.likes + 1 } : r)
-        };
-      }
-      return c;
-    });
-    setComments(updated);
-    localStorage.setItem(`fitness_blog_comments_${post.id}`, JSON.stringify(updated));
   };
 
   return (
@@ -523,199 +429,6 @@ export default function BlogDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Interactive Comments & Community Discussion Section */}
-            <section className="mt-14 pt-10 border-t border-neutral-200" id="comments">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h3 className="text-2xl font-heading font-bold text-neutral-900">
-                    Discussion ({comments.length})
-                  </h3>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    Ask a coach, share your routine progress, or discuss this article.
-                  </p>
-                </div>
-                <a 
-                  href="#leave-comment" 
-                  className="text-xs font-semibold text-primary hover:text-neutral-900 transition-colors"
-                >
-                  Write a comment ↓
-                </a>
-              </div>
-
-              {/* Comments Feed */}
-              <div className="space-y-6">
-                {comments.map((comment) => (
-                  <div key={comment.id} className="bg-white rounded-2xl border border-neutral-200/90 p-6 shadow-xs">
-                    <div className="flex items-start gap-4">
-                      <img 
-                        src={comment.avatar} 
-                        alt={comment.author} 
-                        className="w-11 h-11 rounded-full object-cover border border-neutral-200"
-                      />
-                      <div className="flex-1">
-                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-bold text-neutral-900 text-sm">{comment.author}</h4>
-                            {comment.role && (
-                              <span className="text-[10px] font-semibold bg-neutral-100 text-neutral-600 px-2 py-0.5 rounded-md">
-                                {comment.role}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-xs text-neutral-400">{comment.date}</span>
-                        </div>
-                        <p className="text-neutral-700 text-sm leading-relaxed mb-3">
-                          {comment.content}
-                        </p>
-
-                        {/* Comment Actions */}
-                        <div className="flex items-center gap-4 text-xs font-medium text-neutral-500">
-                          <button 
-                            onClick={() => handleLikeComment(comment.id)}
-                            className="flex items-center gap-1.5 hover:text-primary transition-colors"
-                          >
-                            <FaThumbsUp className="text-[11px]" />
-                            <span>{comment.likes}</span>
-                          </button>
-                          <button 
-                            onClick={() => setReplyingToId(replyingToId === comment.id ? null : comment.id)}
-                            className="hover:text-primary transition-colors"
-                          >
-                            {replyingToId === comment.id ? "Cancel Reply" : "Reply"}
-                          </button>
-                        </div>
-
-                        {/* Inline Reply Form */}
-                        {replyingToId === comment.id && (
-                          <div className="mt-4 pt-3 border-t border-neutral-100 flex gap-2">
-                            <input 
-                              type="text" 
-                              value={replyText}
-                              onChange={(e) => setReplyText(e.target.value)}
-                              placeholder={`Reply to ${comment.author}...`}
-                              className="flex-1 text-xs bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2 focus:outline-none focus:border-primary"
-                              onKeyDown={(e) => e.key === "Enter" && handleReplySubmit(comment.id)}
-                            />
-                            <button 
-                              onClick={() => handleReplySubmit(comment.id)}
-                              className="bg-neutral-900 text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-primary transition-colors"
-                            >
-                              Send
-                            </button>
-                          </div>
-                        )}
-
-                        {/* Nested Replies */}
-                        {comment.replies && comment.replies.length > 0 && (
-                          <div className="mt-4 pt-4 border-t border-neutral-100 space-y-4">
-                            {comment.replies.map((reply) => (
-                              <div key={reply.id} className="flex items-start gap-3 bg-neutral-50 p-3.5 rounded-xl border border-neutral-100">
-                                <img 
-                                  src={reply.avatar} 
-                                  alt={reply.author} 
-                                  className="w-8 h-8 rounded-full object-cover"
-                                />
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <div className="flex items-center gap-2">
-                                      <h5 className="font-bold text-neutral-900 text-xs">{reply.author}</h5>
-                                      {reply.role && (
-                                        <span className="text-[9px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded">
-                                          {reply.role}
-                                        </span>
-                                      )}
-                                    </div>
-                                    <span className="text-[10px] text-neutral-400">{reply.date}</span>
-                                  </div>
-                                  <p className="text-xs text-neutral-700 leading-relaxed mb-2">
-                                    {reply.content}
-                                  </p>
-                                  <button 
-                                    onClick={() => handleLikeComment(reply.id)}
-                                    className="flex items-center gap-1 text-[11px] text-neutral-500 hover:text-primary transition-colors"
-                                  >
-                                    <FaThumbsUp className="text-[10px]" />
-                                    <span>{reply.likes}</span>
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Leave a Comment Form */}
-              <div id="leave-comment" className="mt-10 bg-white rounded-2xl border border-neutral-200 p-6 sm:p-8 shadow-xs scroll-mt-28">
-                <h4 className="text-lg font-bold text-neutral-900 mb-1">Leave a Comment</h4>
-                <p className="text-xs text-neutral-500 mb-6">Your email address will not be published. Required fields are marked *</p>
-
-                {commentSuccess && (
-                  <div className="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs p-3.5 rounded-xl flex items-center gap-2">
-                    <FaCheckCircle className="text-emerald-500" />
-                    <span>Your comment has been posted successfully!</span>
-                  </div>
-                )}
-
-                <form onSubmit={handleCommentSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
-                        Your Name *
-                      </label>
-                      <input 
-                        type="text" 
-                        required
-                        value={commentForm.name}
-                        onChange={(e) => setCommentForm({ ...commentForm, name: e.target.value })}
-                        placeholder="e.g. Jordan Miller"
-                        className="w-full text-sm bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
-                        Email Address *
-                      </label>
-                      <input 
-                        type="email" 
-                        required
-                        value={commentForm.email}
-                        onChange={(e) => setCommentForm({ ...commentForm, email: e.target.value })}
-                        placeholder="you@domain.com"
-                        className="w-full text-sm bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
-                      Your Message / Question *
-                    </label>
-                    <textarea 
-                      rows={4} 
-                      required
-                      value={commentForm.text}
-                      onChange={(e) => setCommentForm({ ...commentForm, text: e.target.value })}
-                      placeholder="Share your thoughts or question for the coaching team..."
-                      className="w-full text-sm bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors resize-none"
-                    />
-                  </div>
-
-                  <button 
-                    type="submit"
-                    className="bg-primary hover:bg-neutral-900 text-white font-bold text-sm py-3 px-7 rounded-xl transition-colors duration-200"
-                  >
-                    Post Comment
-                  </button>
-                </form>
-              </div>
-
-            </section>
-
           </article>
 
           {/* Right Sticky Side Rail (4 Columns) */}
@@ -777,7 +490,7 @@ export default function BlogDetailPage({ params }: PageProps) {
               <div className="bg-white rounded-2xl border border-neutral-200 p-5 shadow-xs flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-neutral-900">Browse All Articles</h4>
-                  <p className="text-[11px] text-neutral-500">7 topics available</p>
+                  <p className="text-[11px] text-neutral-500">12 topics available</p>
                 </div>
                 <Link 
                   href="/blog" 
