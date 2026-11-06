@@ -1,50 +1,85 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaShoppingCart, FaStar } from "react-icons/fa";
 
-interface ProductCardProps {
+export interface ProductCardProps {
   id: number | string;
   title: string;
   price: string;
+  oldPrice?: string;
   category: string;
+  rating?: number;
+  stock?: string;
   image: string;
   badge?: string;
   index: number;
 }
 
-export default function ProductCard({ id, title, price, category, image, badge, index }: ProductCardProps) {
+export default function ProductCard({ 
+  id, 
+  title, 
+  price, 
+  oldPrice,
+  category, 
+  rating,
+  image, 
+  badge, 
+  index 
+}: ProductCardProps) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.4, delay: (index % 3) * 0.1 }}
-      className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-neutral-100 relative"
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.4, delay: (index % 6) * 0.06 }}
+      className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 border border-neutral-200/90 relative"
     >
       {badge && (
-        <div className="absolute top-4 left-4 z-10 bg-primary text-white text-xs font-bold uppercase tracking-wider py-1 px-3 rounded-full">
+        <div className="absolute top-3 left-3 z-10 bg-primary text-white text-[10px] font-bold uppercase tracking-wider py-1 px-2.5 rounded-full shadow-xs">
           {badge}
         </div>
       )}
-      <div className="relative h-60 overflow-hidden bg-neutral-100">
+      
+      <Link href={`/products/${id}`} className="block relative h-60 overflow-hidden bg-neutral-100">
         <img 
           src={image} 
           alt={title} 
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 mix-blend-multiply"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108 mix-blend-multiply"
         />
-        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button className="bg-white text-neutral-900 font-medium px-6 py-2 rounded-full hover:bg-primary hover:text-white transition-colors transform translate-y-4 group-hover:translate-y-0 duration-300 flex items-center gap-2">
-            <FaShoppingCart size={14} /> Add to Cart
-          </button>
+        <div className="absolute inset-0 bg-neutral-950/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <span className="bg-white text-neutral-900 font-semibold text-xs px-5 py-2.5 rounded-full shadow-md hover:bg-primary hover:text-white transition-colors flex items-center gap-2 transform translate-y-3 group-hover:translate-y-0 duration-300">
+            <FaShoppingCart size={12} /> View Details
+          </span>
         </div>
-      </div>
-      <div className="p-5 flex flex-col flex-grow text-center">
-        <span className="text-xs text-neutral-500 uppercase tracking-widest mb-2 font-medium">{category}</span>
-        <h3 className="text-lg font-bold font-heading mb-2 text-neutral-900 leading-snug group-hover:text-primary transition-colors">
+      </Link>
+
+      <div className="p-5 flex flex-col flex-grow">
+        <div className="flex items-center justify-between text-xs text-neutral-500 mb-2 font-medium">
+          <span className="uppercase tracking-wider text-[10px] font-semibold text-primary">{category}</span>
+          {rating && (
+            <span className="flex items-center gap-1 text-amber-500 font-bold text-xs">
+              <FaStar className="text-[11px]" /> {rating}
+            </span>
+          )}
+        </div>
+
+        <h3 className="text-base font-bold font-heading mb-2 text-neutral-900 leading-snug group-hover:text-primary transition-colors line-clamp-2">
           <Link href={`/products/${id}`}>{title}</Link>
         </h3>
-        <div className="mt-auto pt-4 flex items-center justify-center gap-2">
-          <span className="text-lg font-bold text-primary">{price}</span>
+
+        <div className="mt-auto pt-3 border-t border-neutral-100 flex items-center justify-between">
+          <div className="flex items-baseline gap-2">
+            <span className="text-base font-bold text-neutral-900">{price}</span>
+            {oldPrice && (
+              <span className="text-xs text-neutral-400 line-through">{oldPrice}</span>
+            )}
+          </div>
+          <Link 
+            href={`/products/${id}`}
+            className="text-xs font-semibold text-primary hover:text-neutral-900 transition-colors"
+          >
+            Details →
+          </Link>
         </div>
       </div>
     </motion.div>
