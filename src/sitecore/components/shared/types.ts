@@ -61,3 +61,50 @@ export interface ServiceItemFields extends Partial<MediaCtaFields> {
   IconName?: Field<string>;
 }
 
+/** DatasourceItems/BlogAuthor */
+export interface BlogAuthorFields {
+  Name: Field<string>;
+  Role?: Field<string>;
+  Credentials?: Field<string>;
+  Avatar?: Field<string> | ImageField;
+  Bio?: Field<string>;
+}
+
+/** DatasourceItems/BlogPostItem */
+export interface BlogPostItemFields {
+  ArticleId?: Field<string>;
+  Slug?: Field<string>;
+  Category?: Field<string>;
+  FitnessLevel?: Field<string>;
+  ReadTime?: Field<string>;
+  PublishedDate?: Field<string>;
+  UpdatedDate?: Field<string>;
+  Title: Field<string>;
+  Subtitle?: Field<string>;
+  Excerpt?: Field<string>;
+  CoverImage?: Field<string> | ImageField;
+  ImageCaption?: Field<string>;
+  KeyTakeaways?: Field<string>;
+  ContentBody?: Field<string>;
+  SectionsJson?: Field<string>;
+  Tags?: Field<string>;
+  AuthorName?: Field<string>;
+  AuthorRole?: Field<string>;
+  AuthorCredentials?: Field<string>;
+  AuthorAvatar?: Field<string> | ImageField;
+  AuthorBio?: Field<string>;
+  Author?: SitecoreItem<BlogAuthorFields>;
+  RelatedPosts?: SitecoreItem<BlogPostItemFields>[];
+  CommentsCount?: Field<number>;
+}
+
+/** Organisms/BlogCatalog */
+export interface BlogCatalogFields {
+  Title?: Field<string>;
+  Subtitle?: Field<string>;
+  PageSize?: Field<number>;
+  DefaultCategory?: Field<string>;
+  Posts?: SitecoreItem<BlogPostItemFields>[];
+}
+
+

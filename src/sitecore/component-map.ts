@@ -1,6 +1,10 @@
 import type { ComponentType } from "react";
 import * as AboutSnippet from "./components/AboutSnippet";
 import * as AppointmentForm from "./components/AppointmentForm";
+import * as BlogCatalog from "./components/BlogCatalog";
+import * as BlogCtaBanner from "./components/BlogCtaBanner";
+import * as BlogDetailView from "./components/BlogDetailView";
+import * as BlogGrid from "./components/BlogGrid";
 import * as CoachesSection from "./components/CoachesSection";
 import * as Footer from "./components/Footer";
 import * as HeroSection from "./components/HeroSection";
@@ -36,4 +40,8 @@ export const componentMap = new Map<string, SitecoreComponentModule>([
   ["StatsSection", StatsSection],
   ["QuoteBlock", QuoteBlock],
   ["ServicesGrid", ServicesGrid],
+  ["BlogCatalog", BlogCatalog],
+  ["BlogDetailView", BlogDetailView],
+  ["BlogGrid", BlogGrid],
+  ["BlogCtaBanner", BlogCtaBanner],
 ]);
