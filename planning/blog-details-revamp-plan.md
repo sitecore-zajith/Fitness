@@ -122,11 +122,25 @@ Revamp the fitness, coaching, and nutrition blog details page (`/blog/[id]`) int
 
 ---
 
+## Phase 4: 100 Meaningful Articles Dataset Generation
+
+- [x] **Task 9: Scaled Blog Database to 100 Complete Articles (`src/data/blogData.ts`)**
+  - Generated 100 distinct, authentic articles spanning all 6 categories:
+    - 17 Nutrition & Diet articles (protein kinetics, creatine saturation, hydration, fasting, micronutrients).
+    - 17 Strength Training articles (progressive overload, deadlifts, squats, bench press, volume landmarks).
+    - 17 Cardio & Conditioning articles (HIIT vs. Zone 2, VO2 max intervals, hybrid athlete training, rowers).
+    - 17 Coaching & Recovery articles (sleep architecture, CNS fatigue, deloading, cold plunges, sauna, HRV).
+    - 16 Yoga & Flexibility articles (spine decompression, ankle dorsiflexion, hip flexors, thoracic rotation).
+    - 16 Healthy Recipes (20-min salmon, turkey bowls, protein pancakes, chia pudding, overnight oats).
+  - Each article includes 3–4 executive summary takeaways, structured section subheadings, coach tips, training level, read time, and high-res imagery.
+
+---
+
 ## Done When
-- [x] Every article from the blog listing (`/blog/1` through `/blog/12`) has its own rich, dedicated fitness/nutrition/coaching content.
+- [x] Full dataset of 100 unique, meaningful articles in `src/data/blogData.ts` accessible by route `/blog/[id]`.
 - [x] The blog details layout matches enterprise publication standards with clean typography, key takeaways, coach callout cards, and sticky navigation.
 - [x] Comments & discussion forms removed for pure distraction-free reading.
 - [x] Filters revamped to Title, Description, Level, Author, and Category with hashtags removed.
-- [x] Infinite scroll works seamlessly with zero pagination.
+- [x] Infinite scroll seamlessly batches all 100 articles with zero pagination.
 - [x] Zero build or lint errors (`npm run build` exits 0).
 
