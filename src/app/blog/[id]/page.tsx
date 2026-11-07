@@ -33,7 +33,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
   const resolvedParams = await params;
   const id = resolvedParams?.id || "1";
   const post = getBlogPost(id);
-  const relatedPosts = getRelatedPosts(post.relatedPostIds);
+  const relatedPosts = getRelatedPosts(post.relatedPostIds || []);
 
   return <BlogDetailView post={post} relatedPosts={relatedPosts} />;
 }

@@ -61,8 +61,13 @@ export interface BlogPost {
   tableOfContents: TableOfContentsItem[];
   sections: ArticleSection[];
   tags: string[];
-  relatedPostIds: string[];
-  initialComments: BlogPostComment[];
+  relatedPostIds?: string[];
+  initialComments?: BlogPostComment[];
+  publishDate?: string;
+  displayDay?: string;
+  displayMonth?: string;
+  commentCount?: number;
+  description?: string;
 }
 
 export const authors: Record<string, Author> = {
@@ -10639,6 +10644,7 @@ export function getBlogPost(id: string): BlogPost {
   return blogPosts[0];
 }
 
-export function getRelatedPosts(ids: string[]): BlogPost[] {
+export function getRelatedPosts(ids?: string[]): BlogPost[] {
+  if (!ids || ids.length === 0) return [];
   return blogPosts.filter((p) => ids.includes(p.id));
 }

@@ -59,7 +59,8 @@ export default function BlogDetailView({ post, relatedPosts }: BlogDetailViewPro
       }
 
       // Check which section heading is currently active
-      const sectionElements = post.tableOfContents
+      const toc = post.tableOfContents || [];
+      const sectionElements = toc
         .map((item) => document.getElementById(item.id))
         .filter(Boolean) as HTMLElement[];
 
@@ -67,7 +68,7 @@ export default function BlogDetailView({ post, relatedPosts }: BlogDetailViewPro
       for (let i = sectionElements.length - 1; i >= 0; i--) {
         const el = sectionElements[i];
         if (el.offsetTop <= scrollPosition) {
-          setActiveSection(post.tableOfContents[i].id);
+          setActiveSection(toc[i].id);
           break;
         }
       }
@@ -266,31 +267,33 @@ export default function BlogDetailView({ post, relatedPosts }: BlogDetailViewPro
             </figure>
 
             {/* Executive Summary / Key Takeaways Box */}
-            <section className="bg-gradient-to-br from-amber-50/70 to-orange-50/50 border border-amber-200/70 rounded-2xl p-6 sm:p-7 mb-10 shadow-xs">
-              <div className="flex items-center gap-2.5 text-xs font-bold text-amber-900 uppercase tracking-widest mb-4">
-                <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
-                Executive Summary & Key Takeaways
-              </div>
-              <ul className="space-y-3">
-                {post.keyTakeaways.map((takeaway, idx) => (
-                  <li key={idx} className="flex items-start gap-3 text-neutral-800 text-sm sm:text-base leading-relaxed">
-                    <FaCheckCircle className="text-primary mt-1 flex-shrink-0 text-sm" />
-                    <span>{takeaway}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
+            {(post.keyTakeaways || []).length > 0 && (
+              <section className="bg-gradient-to-br from-amber-50/70 to-orange-50/50 border border-amber-200/70 rounded-2xl p-6 sm:p-7 mb-10 shadow-xs">
+                <div className="flex items-center gap-2.5 text-xs font-bold text-amber-900 uppercase tracking-widest mb-4">
+                  <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
+                  Executive Summary & Key Takeaways
+                </div>
+                <ul className="space-y-3">
+                  {post.keyTakeaways.map((takeaway, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-neutral-800 text-sm sm:text-base leading-relaxed">
+                      <FaCheckCircle className="text-primary mt-1 flex-shrink-0 text-sm" />
+                      <span>{takeaway}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
             {/* Structured Article Sections */}
             <div className="space-y-12 text-neutral-800">
-              {post.sections.map((section) => (
+              {(post.sections || []).map((section) => (
                 <section key={section.id} id={section.id} className="scroll-mt-28">
                   <h2 className="text-2xl sm:text-3xl font-heading font-bold text-neutral-900 mb-5 leading-snug">
                     {section.heading}
                   </h2>
 
                   <div className="space-y-4 text-base sm:text-lg text-neutral-700 leading-relaxed font-normal">
-                    {section.paragraphs.map((p, pIdx) => (
+                    {section.paragraphs?.map((p, pIdx) => (
                       <p key={pIdx}>{p}</p>
                     ))}
                   </div>
@@ -352,21 +355,23 @@ export default function BlogDetailView({ post, relatedPosts }: BlogDetailViewPro
             </div>
 
             {/* Article Tags */}
-            <div className="mt-12 pt-8 border-t border-neutral-200">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3">
-                Related Topics
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {post.tags.map((tag, idx) => (
-                  <span 
-                    key={idx} 
-                    className="text-xs font-medium bg-neutral-100 text-neutral-700 px-3.5 py-1.5 rounded-lg border border-neutral-200 hover:bg-neutral-200 transition-colors"
-                  >
-                    #{tag}
-                  </span>
-                ))}
+            {(post.tags || []).length > 0 && (
+              <div className="mt-12 pt-8 border-t border-neutral-200">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3">
+                  Related Topics
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {post.tags.map((tag, idx) => (
+                    <span 
+                      key={idx} 
+                      className="text-xs font-medium bg-neutral-100 text-neutral-700 px-3.5 py-1.5 rounded-lg border border-neutral-200 hover:bg-neutral-200 transition-colors"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Author Coach Full Bio Card */}
             <div className="mt-10 bg-white rounded-2xl border border-neutral-200 p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-start shadow-xs">
@@ -431,55 +436,59 @@ export default function BlogDetailView({ post, relatedPosts }: BlogDetailViewPro
             <div className="sticky top-28 space-y-6">
 
               {/* Table of Contents Widget */}
-              <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-xs">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-4 pb-3 border-b border-neutral-100 flex items-center justify-between">
-                  <span>Table of Contents</span>
-                  <span className="text-[11px] font-normal text-neutral-400">
-                    {Math.round(readingProgress)}% read
-                  </span>
-                </h3>
+              {(post.tableOfContents || []).length > 0 && (
+                <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-xs">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-4 pb-3 border-b border-neutral-100 flex items-center justify-between">
+                    <span>Table of Contents</span>
+                    <span className="text-[11px] font-normal text-neutral-400">
+                      {Math.round(readingProgress)}% read
+                    </span>
+                  </h3>
 
-                <nav className="space-y-1">
-                  {post.tableOfContents.map((item) => {
-                    const isActive = activeSection === item.id;
-                    return (
-                      <a 
-                        key={item.id} 
-                        href={`#${item.id}`}
-                        className={`block text-xs py-2 px-3 rounded-lg transition-all leading-snug ${
-                          isActive 
-                            ? "bg-primary/10 text-primary font-bold border-l-2 border-primary" 
-                            : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50"
-                        }`}
-                      >
-                        {item.title}
-                      </a>
-                    );
-                  })}
-                </nav>
-              </div>
+                  <nav className="space-y-1">
+                    {(post.tableOfContents || []).map((item) => {
+                      const isActive = activeSection === item.id;
+                      return (
+                        <a 
+                          key={item.id} 
+                          href={`#${item.id}`}
+                          className={`block text-xs py-2 px-3 rounded-lg transition-all leading-snug ${
+                            isActive 
+                              ? "bg-primary/10 text-primary font-bold border-l-2 border-primary" 
+                              : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50"
+                          }`}
+                        >
+                          {item.title}
+                        </a>
+                      );
+                    })}
+                  </nav>
+                </div>
+              )}
 
               {/* Quick Coach Stats / Quick Guide Widget */}
-              <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-xs">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                    <FaUserGraduate className="text-sm" />
+              {post.author && (
+                <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-xs">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                      <FaUserGraduate className="text-sm" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-neutral-900">Coached by {post.author.name}</h4>
+                      <p className="text-[11px] text-neutral-500">{post.author.credentials}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-neutral-900">Coached by {post.author.name}</h4>
-                    <p className="text-[11px] text-neutral-500">{post.author.credentials}</p>
-                  </div>
+                  <p className="text-xs text-neutral-600 leading-relaxed mb-4">
+                    Have questions about adjusting this protocol for your individual training split or injury history?
+                  </p>
+                  <Link 
+                    href="/contact" 
+                    className="block text-center text-xs font-bold text-neutral-900 hover:text-white bg-neutral-100 hover:bg-primary py-2.5 px-4 rounded-xl transition-all"
+                  >
+                    Ask Coach a Question
+                  </Link>
                 </div>
-                <p className="text-xs text-neutral-600 leading-relaxed mb-4">
-                  Have questions about adjusting this protocol for your individual training split or injury history?
-                </p>
-                <Link 
-                  href="/contact" 
-                  className="block text-center text-xs font-bold text-neutral-900 hover:text-white bg-neutral-100 hover:bg-primary py-2.5 px-4 rounded-xl transition-all"
-                >
-                  Ask Coach a Question
-                </Link>
-              </div>
+              )}
 
               {/* Back to Blog Listing */}
               <div className="bg-white rounded-2xl border border-neutral-200 p-5 shadow-xs flex items-center justify-between">
