@@ -60,8 +60,6 @@
     $HomePath           = "$SitePath/Home"
     $BlogPath           = "$HomePath/Blog"
     $DataPath           = "$SitePath/Data"
-    $BlogDataPath       = "$DataPath/Blog"
-    $BlogPostsDataPath  = "$BlogDataPath/Posts"
 
     # Template Paths
     $OrganismsPath      = "master:/sitecore/templates/Project/Corporate/FitnessMaster/Organisms"
@@ -224,13 +222,10 @@
                         ContentBody       = "<p>Creatine monohydrate remains the gold standard in sports nutrition supplements.</p>"
                         SectionsJson      = '[{"id":"section-sodium-dynamics","heading":"1. Sodium Mechanics: Plasma Volume and Muscular Force","paragraphs":["Sodium is the primary extracellular electrolyte responsible for maintaining osmotic pressure and systemic blood volume. When sodium concentrations drop during intense physical exertion, blood volume decreases, causing heart rate elevation for the same relative athletic output (cardiac drift).","Furthermore, the sodium-potassium pump (Na+/K+-ATPase) generates the electrochemical gradient required for motor neuron firing and skeletal muscle fiber recruitment."],"bulletPoints":["Target 500mg - 1,000mg of elemental sodium per liter of intra-workout hydration.","Heavy or ''salty'' sweaters can lose upwards of 1,500mg to 2,000mg of sodium per hour in humid environments.","Consuming sodium 30 minutes pre-workout enhances cellular fluid retention and intramuscular pump."],"callout":{"type":"quote","title":"Dietitian Warning","text":"Drinking large volumes of pure, distilled, or mineral-depleted water without adequate sodium causes hemodilution, precipitating early muscular cramping and hyponatremia.","author":"Dr. Elena Rostova, PhD, RD, CSSD"}},{"id":"section-potassium-synergy","heading":"2. Potassium: The Intracellular Counterbalance & Glycogen Uptake","paragraphs":["While sodium dominates extracellular fluid, over 98% of total body potassium resides inside your cells. Potassium works in direct tandem with sodium to repolarize membranes after muscle contractions.","Additionally, skeletal muscle stores approximately 19.5mg of potassium alongside every single gram of stored glycogen. Chronic potassium deficit prevents muscles from holding full glycogen reserves."],"image":{"url":"https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=1200&auto=format&fit=crop","alt":"Whole food potassium sources including bananas, avocado, and leafy greens","caption":"Potassium is best replenished through nutrient-dense whole foods like coconut water and spinach post-exercise."},"callout":{"type":"tip","title":"Pro Nutrition Tip","text":"Avoid taking high doses of potassium salts during workouts as it can cause rapid gastrointestinal distress. Reserve potassium replenishment for post-training meals.","author":"Coach Alex Rivers"}},{"id":"section-hydration-protocols","heading":"3. Tactical Intra-Workout Hydration Formulation","paragraphs":["For sessions under 60 minutes in temperature-controlled gyms, plain water or light mineral water is typically sufficient. However, for sessions exceeding 75 minutes, endurance sessions, or high-sweat environments, formulate your hydration with the optimal 3:1 or 4:1 sodium-to-potassium ratio."],"bulletPoints":["Pre-Session: 16oz water + 400mg sodium 30-45 minutes before warmups.","Intra-Session: Sip 20-24oz water + 700mg sodium + 150mg potassium per hour.","Post-Session: Replace 125% to 150% of sweat weight lost within 2 hours alongside a carbohydrate meal."]}]'
                         Tags              = "Nutrition & Diet, Electrolytes, Hydration, Endurance, Performance"
-                        CommentCount      = 0
-                        CommentsCount     = 0
                     }
                 }
             )
-        },
-
+        }
     )
 
     # ============================================================================
@@ -264,10 +259,6 @@
 
         Write-Host "[i] Target Parent Path : $BlogPath" -ForegroundColor Cyan
         Write-Host "[i] Page Template ID   : $pageTemplateId" -ForegroundColor Cyan
-
-        # Ensure Data/Blog and Data/Blog/Posts directories exist
-        $blogDataFolder  = Ensure-Item -ParentPath $DataPath -Name "Blog" -TemplateId $CommonFolderId
-        $postsDataFolder = Ensure-Item -ParentPath "master:$($blogDataFolder.Paths.FullPath)" -Name "Posts" -TemplateId $CommonFolderId
 
         # Ensure shared service options under Data/Services for Appointment dropdowns
         $serviceItemTplId = Get-TemplateIdByPath "$DatasourceTplPath/ServiceItem"
@@ -391,13 +382,7 @@
         Write-Host "============================================================" -ForegroundColor Green
         Write-Host "[SUCCESS] All 7 Sitecore pages and form/blog blocks provisioned under Blog!" -ForegroundColor Green
         Write-Host "  Parent Route Path : $BlogPath (/Home/Blog)" -ForegroundColor Green
-        Write-Host "  Example 1         : $BlogPath/Corporate" -ForegroundColor Green
-        Write-Host "  Example 2         : $BlogPath/FitLife Coach" -ForegroundColor Green
-        Write-Host "  Blog Post 1       : $BlogPath/how-much-protein-do-you-really-need-every-day" -ForegroundColor Green
         Write-Host "  Blog Post 2       : $BlogPath/creatine-monohydrate-the-science-backed-hypertrophy-supplement" -ForegroundColor Green
-        Write-Host "  Blog Post 3       : $BlogPath/why-you-should-eat-more-vegetables-micronutrients-recovery" -ForegroundColor Green
-        Write-Host "  Blog Post 4       : $BlogPath/intermittent-fasting-muscle-retention-evidence-vs-hype" -ForegroundColor Green
-        Write-Host "  Blog Post 5       : $BlogPath/electrolyte-balance-for-endurance-strength-sodium-vs-potassium" -ForegroundColor Green
         Write-Host "============================================================" -ForegroundColor Green
     }
     catch {
