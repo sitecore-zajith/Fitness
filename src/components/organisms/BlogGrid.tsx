@@ -4,7 +4,7 @@ import BlogCard from "@/components/molecules/BlogCard";
 import Pagination from "@/components/molecules/Pagination";
 
 export interface BlogPost {
-  id?: number;
+  id?: number | string;
   title?: string;
   excerpt?: string;
   date?: string;
