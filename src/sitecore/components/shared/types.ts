@@ -77,11 +77,15 @@ export interface BlogPostItemFields {
   Category?: Field<string>;
   FitnessLevel?: Field<string>;
   ReadTime?: Field<string>;
+  PublishDate?: Field<string>;
   PublishedDate?: Field<string>;
   UpdatedDate?: Field<string>;
+  DisplayDay?: Field<string>;
+  DisplayMonth?: Field<string>;
   Title: Field<string>;
   Subtitle?: Field<string>;
   Excerpt?: Field<string>;
+  Description?: Field<string>;
   CoverImage?: Field<string> | ImageField;
   ImageCaption?: Field<string>;
   KeyTakeaways?: Field<string>;
@@ -95,6 +99,7 @@ export interface BlogPostItemFields {
   AuthorBio?: Field<string>;
   Author?: SitecoreItem<BlogAuthorFields>;
   RelatedPosts?: SitecoreItem<BlogPostItemFields>[];
+  CommentCount?: Field<number>;
   CommentsCount?: Field<number>;
 }
 
